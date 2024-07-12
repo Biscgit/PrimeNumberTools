@@ -7,10 +7,22 @@ import random
 
 import streamlit as st
 import plotly.express as px
+from plotly.express.colors import qualitative as colors
 import plotly.graph_objects as go
 
 from .common import check_num
 from .lenstra import WeierstrassPoint, WeierStrassEC
+
+
+def get_random_col_emoji() -> tuple:
+    return random.choice([
+        ("🟥", colors.Plotly[1]),
+        ("🟧", colors.D3[1]),
+        ("🟨", colors.Set2[5]),
+        ("🟩", colors.G10[3]),
+        ("🟦", colors.G10[0]),
+        ("🟪", colors.Set1[3]),
+    ])
 
 
 @functools.lru_cache()
@@ -42,7 +54,7 @@ def get_weierstrass_points(a: int, b: int, p: int) -> list[tuple[int, int]]:
 
 @functools.lru_cache()
 def is_on_curve(a: int, b: int, p: int, x: int, y: int) -> bool:
-    return (x, y) in get_weierstrass_points(a, b, p)
+    return pow(y, 2, p) % p == (pow(x, 3, p) + a * x + b) % p
 
 
 def draw_curve(a: int, b: int, p: int, cont: st.container, highlighted: typing.Optional[list[tuple[int, int]]] = None):
@@ -52,11 +64,15 @@ def draw_curve(a: int, b: int, p: int, cont: st.container, highlighted: typing.O
             _x = [i[0] for i in points]
             _y = [i[1] for i in points]
 
+            point_size = 12 - p.bit_length() // 2
             fig = go.Figure()
             fig.add_trace(go.Scatter(
                 x=_x,
                 y=_y,
                 mode='markers',
+                marker=dict(
+                    size=point_size,
+                ),
                 hovertemplate='x=%{x}<br>y=%{y}<extra></extra>',
                 showlegend=False,
                 opacity=0.8
@@ -71,8 +87,9 @@ def draw_curve(a: int, b: int, p: int, cont: st.container, highlighted: typing.O
                 y=[p + p // 100],
                 mode='markers',
                 marker=dict(
-                    size=7,
                     color=px.colors.qualitative.Plotly[0],
+                    size=point_size * 1.5,
+                    symbol="star-diamond",
                 ),
                 hovertext=f"Point 𝓞",
                 hoverinfo=["text"],
@@ -89,8 +106,9 @@ def draw_curve(a: int, b: int, p: int, cont: st.container, highlighted: typing.O
                     y=[point[1]],
                     mode='markers',
                     marker=dict(
-                        size=12,
-                        color=px.colors.qualitative.Plotly[1],
+                        size=point_size * 2,
+                        color=px.colors.qualitative.Set1[4],
+                        symbol="hexagon",
                     ),
                     hovertext=f"Selected<br>x={point[0]}<br>y={point[1]}",
                     hoverinfo=["text"],
@@ -110,9 +128,12 @@ def draw_curve(a: int, b: int, p: int, cont: st.container, highlighted: typing.O
                 state = st.session_state
                 state.input_point_x = s_point["x"]
                 state.input_point_y = s_point["y"]
-                state.point_highlight = True
+
+                state.highlighted_points = [(s_point["x"], s_point["y"])]
 
                 # ToDo: solve that it works without rerun
+                print("trigger now")
                 st.rerun()
 
-        st.markdown(fr"Plotted Weiterstrass Curve $\; y^2 \equiv x^3 + {a}x + {b} \; mod \; {p}$")
+        st.markdown(fr"Plotted Weiterstrass Curve $\; y^2 \equiv x^3 + {a}x + {b} \; mod \; {p}\,$ "
+                    fr"with $\,{len(points)}\,$ points$\,$ + 𝓞")

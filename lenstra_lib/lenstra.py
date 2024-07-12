@@ -54,6 +54,10 @@ class WeierstrassPoint:
     def is_infinite(self) -> bool:
         return math.isinf(self.y)
 
+    def is_on_curve(self) -> bool:
+        p = self.curve.p
+        return pow(self.y, 2, p) % p == (pow(self.x, 3, p) + self.curve.a * self.x + self.curve.b) % p
+
     def __repr__(self) -> str:
         curve = self.curve
 
@@ -116,44 +120,48 @@ class WeierstrassPoint:
         return numerator * pow(denominator, -1, p) % p
 
     def lenstra_streamlit(self, max_iterations: int) -> typing.Generator[
-        tuple[WeierstrassPoint, bool], None, typing.Optional[int]]:
+        tuple[WeierstrassPoint, bool, int], None, typing.Optional[int]]:
 
         point: WeierstrassPoint = self
-        n = self.curve.p
+        n: int = self.curve.p
 
         # @functools.lru_cache(maxsize=1024)
         def lenstra_mul(scalar: int) -> typing.Generator[
-            tuple[WeierstrassPoint, bool], None, int]:
+            tuple[WeierstrassPoint, bool, int], None, int]:
             """Multiplies point by a scalar.
             On finding a point in infinity return true
             yields [point, is_infinite, is_operation_add]
             returns is_finished"""
 
             nonlocal point
+            base_point = point
 
             for position in range(scalar.bit_length() - 1, 0, -1):
                 bit = scalar >> (position - 1) & 0b1
 
                 # double
-                next_point = point.double()
+                next_point: WeierstrassPoint = point.double()
 
-                yield next_point, False
+                yield next_point, False, scalar
                 if next_point.is_infinite():
                     return math.gcd((point.x - next_point.x) % n, n)
 
+                assert next_point.is_on_curve()
                 point = next_point
 
                 # add
                 if bit:
-                    next_point = point.add(self)
+                    next_point = point.add(base_point)
 
-                    yield next_point, True
+                    yield next_point, True, scalar
                     if next_point.is_infinite():
                         return math.gcd((point.x - next_point.x) % n, n)
 
-                    _p = next_point
+                    assert next_point.is_on_curve()
+                    point = next_point
 
         primes = list(sympy.primerange(sympy.prime(max_iterations) + 1))
+        primes = list(range(2, 1000))
         for factor in primes:
             res = yield from lenstra_mul(factor)
 
@@ -169,6 +177,7 @@ class WeierstrassPoint:
 
         point = self
         next_point = self
+        base_point = self
 
         p = self.curve.p
 
@@ -176,7 +185,7 @@ class WeierstrassPoint:
             """Multiplies point by a scalar.
             On finding a point in infinity return true"""
 
-            nonlocal point, next_point
+            nonlocal point, next_point, base_point
 
             for position in range(scalar.bit_length() - 1, 0, -1):
                 bit = scalar >> (position - 1) & 0b1
@@ -189,10 +198,12 @@ class WeierstrassPoint:
 
                 # add
                 if bit:
-                    if (next_point := point.add(self)).is_infinite():
+                    if (next_point := point.add(base_point)).is_infinite():
                         return True
 
                     point = next_point
+
+            base_point = point
 
         # check points with [k!]G
         for factorial in range(2, max_factor):
@@ -204,7 +215,7 @@ class WeierstrassPoint:
 
 
 def streamlit_lenstra(curve: tuple, point: tuple, max_factor: int = 1_000) -> typing.Generator[
-    tuple[WeierstrassPoint, typing.Optional[bool]], None, typing.Optional[int]]:
+    tuple[WeierstrassPoint, typing.Optional[bool], int], None, typing.Optional[int]]:
     """Yields points while calculating"""
 
     x, y = point
@@ -216,7 +227,7 @@ def streamlit_lenstra(curve: tuple, point: tuple, max_factor: int = 1_000) -> ty
 
     elliptic_curve = WeierStrassEC(a, b, n)
     start_point = WeierstrassPoint(x, y, elliptic_curve)
-    yield start_point, None
+    yield start_point, None, 1
 
     factor = yield from start_point.lenstra_streamlit(max_factor)
     return factor

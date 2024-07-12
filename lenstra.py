@@ -9,6 +9,19 @@ state = st.session_state
 set_default_session(state)
 
 
+def reset_highlighted():
+    state.highlighted_points = []
+
+
+def toggle_highlight(x: typing.Any, y: typing.Any):
+    pair = (x, y)
+
+    if pair in state.highlighted_points:
+        state.highlighted_points.remove(pair)
+    else:
+        state.highlighted_points.append(pair)
+
+
 def set_random_curve():
     limit = int(factorize) or 100
 
@@ -22,8 +35,14 @@ def set_random_curve():
     state.input_curve_a = str(_a)
     state.input_curve_b = str(_b)
 
+    reset_highlighted()
+
 
 def set_random_point():
+    old_pair = state.input_point_x, state.input_point_y
+    if old_pair in state.highlighted_points:
+        state.highlighted_points.remove(old_pair)
+
     points = get_weierstrass_points(
         int(state.input_curve_a),
         int(state.input_curve_b),
@@ -34,17 +53,16 @@ def set_random_point():
     state.input_point_x = str(_p[0])
     state.input_point_y = str(_p[1])
 
-
-def on_new_number():
-    state.highlighted_points = []
+    toggle_highlight(state.input_point_x, state.input_point_y)
 
 
 # main site - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 st.title("Lenstra elliptic-curve factorization")
+
 factorize: str = st.text_input(
     "Set your Number $n$ to factorize",
     placeholder="Type number here",
-    on_change=on_new_number,
+    on_change=reset_highlighted,
 )
 
 call_factorize = False
@@ -137,7 +155,7 @@ with cols[2]:
     if st.button(
             "🔀",
             key="button_point",
-            disabled=not can_plot(),
+            disabled=check_num(factorize) and int(factorize) > 10_000 or not can_plot(),
             use_container_width=True,
     ):
         set_random_point()
@@ -156,40 +174,31 @@ with cols[1]:
         placeholder="Coordinate Y"
     )
 
+on_curve = True
 if not all([state.input_point_x, state.input_point_y]):
     st.info("Enter a point or select random ones", icon="ℹ️")
 
 elif not check_num(state.input_point_x) or not check_num(state.input_point_y):
     st.error("One of the coordinates is not a number!", icon="❌")
 
-elif check_num(factorize) and not is_on_curve(
+elif check_num(factorize) and not (on_curve := is_on_curve(
         int(state.input_curve_a),
         int(state.input_curve_b),
         int(factorize),
         int(state.input_point_x),
         int(state.input_point_y),
-):
+)):
     st.error("Your point is not on the curve!", icon="❌")
-
-
-def toggle_highlight(x: typing.Any, y: typing.Any):
-    pair = (x, y)
-
-    if pair in state.highlighted_points:
-        state.highlighted_points.remove(pair)
-    else:
-        state.highlighted_points.append(pair)
-
 
 with cols[3]:
     st.container(height=12, border=False)
-    if check_num(factorize):
-        if st.button(
-                "Highlight",
-                use_container_width=True,
-                disabled=not can_plot() or not check_num(state.input_point_x) or not check_num(state.input_point_y),
-        ):
-            toggle_highlight(state.input_point_x, state.input_point_y)
+    if st.button(
+            "Highlight",
+            use_container_width=True,
+            disabled=not can_plot() or not check_num(state.input_point_x) or not check_num(
+                state.input_point_y) or check_num(factorize) and int(factorize) > 10_000,
+    ):
+        toggle_highlight(state.input_point_x, state.input_point_y)
 
 with cols[4]:
     st.container(height=18, border=False)
@@ -199,7 +208,7 @@ with cols[4]:
         st.write("⚫")
 
 # execute factorization
-st.header("Calculation")
+st.header("Factorization")
 # call_try_factorize = st.button("Try until found", type="secondary", use_container_width=True)
 
 if not all([check_num(x) for x in [
@@ -208,8 +217,8 @@ if not all([check_num(x) for x in [
     state.input_curve_b,
     state.input_point_x,
     state.input_point_y
-]]):
-    st.info("Enter missing values to start algorithm", icon="ℹ️")
+]]) or not on_curve:
+    st.info("Enter missing or change incorrect values to start algorithm", icon="ℹ️")
 
 else:
     number = int(factorize)
@@ -226,10 +235,6 @@ else:
             x = int(state.input_point_x) % n
             y = int(state.input_point_y) % n
 
-            result_widget = st.container()
-            # if st.button("Load more"):
-            #     max_show += 10
-
             items = []
             iterator = streamlit_lenstra((a, b, n), (x, y))
 
@@ -240,62 +245,75 @@ else:
                 except StopIteration as result:
                     if result.value:
                         result = int(result.value)
-                        with result_widget:
-                            st.success(
-                                fr"Found factor $\, {result} \,$ with $\, {n}\, \vert \, {result} = {n // result}$",
-                                icon="✅"
-                            )
+                        st.success(
+                            fr"Found factor $\, {result} \,$ with $\, {n}\, \vert \, {result} = {n // result}$",
+                            icon="✅"
+                        )
 
                     else:
-                        with result_widget:
-                            st.error(fr"Found no valid factor", icon="❌")
+                        # with result_widget:
+                        st.error(fr"Found no valid factor", icon="❌")
 
                     break
 
             st.header("Last points")
             size = len(items)
 
-            for i, item in enumerate(items):
-                if i > max_show:
-                    break
+            calculation_container = st.container()
 
-                col_outer = st.columns([1, 15])
-                with col_outer[0]:
-                    s = {
-                        True: "➕",
-                        False: "✖️",
-                        None: "◾️"
-                    }.get(item[1])
-                    st.markdown(f"""<div style="font-size: 40px;">{s}</div>""", unsafe_allow_html=True)
+            if st.button("Load more", disabled=max_show < size):
+                max_show += 10
 
-                with col_outer[1]:
-                    with st.container(border=True):
-                        cols = st.columns([8, 8, 2, 4, 1])
+            with calculation_container:
+                last = items.pop(-1)
 
-                        with cols[0]:
-                            if i < size - 1:
-                                if item[1]:
-                                    st.markdown(fr"$P_0 + P_{{{size - i - 2}}} = $")
+                for i, item in enumerate(items):
+                    if i > max_show:
+                        break
+
+                    col_outer = st.columns([1, 15])
+                    with col_outer[0]:
+                        s = {
+                            True: "➕",
+                            False: "✖️",
+                            None: "◾️"
+                        }.get(item[1])
+                        st.markdown(f"""<div style="font-size: 40px;">{s}</div>""", unsafe_allow_html=True)
+
+                    with col_outer[1]:
+                        with st.container(border=True):
+                            cols = st.columns([4, 6, 8, 4, 1])
+
+                            with cols[0]:
+                                if i < size - 1:
+                                    if item[1]:
+                                        st.markdown(fr"$P_0 + P_{{{size - i - 2}}} = $")
+                                    else:
+                                        st.markdown(fr"$2 \cdot P_{{{size - i - 2}}} = $")
+
+                            with cols[1]:
+                                st.markdown(f"$P_{{{size - i - 1}}}({item[0].x}|{item[0].y})$")
+
+                            with cols[2]:
+                                st.markdown(item[2])
+                            #     before = items[i + 1][0]
+                            #     if item[1]:
+                            #         st.markdown(fr"$s \equiv \frac{{{before.y} - {current.y}}}$")
+
+                            with cols[3]:
+                                if st.button(
+                                        "Highlight",
+                                        use_container_width=True,
+                                        key=f"res_select_{i}",
+                                        disabled=not can_plot(),
+                                ):
+                                    toggle_highlight(item[0].x, item[0].y)
+
+                            with cols[4]:
+                                if (item[0].x, item[0].y) in state.highlighted_points:
+                                    st.write("🔴")
                                 else:
-                                    st.markdown(fr"$2 \cdot P_{{{size - i - 2}}} = $")
-
-                        with cols[1]:
-                            st.markdown(f"$P_{{{size - i - 1}}}({item[0].x}|{item[0].y})$")
-
-                        with cols[3]:
-                            if st.button(
-                                    "Highlight",
-                                    use_container_width=True,
-                                    key=f"res_select_{i}",
-                                    disabled=not can_plot(),
-                            ):
-                                toggle_highlight(item[0].x, item[0].y)
-
-                        with cols[4]:
-                            if (item[0].x, item[0].y) in state.highlighted_points:
-                                st.write("🔴")
-                            else:
-                                st.write("⚫")
+                                    st.write("⚫")
 
 # plot curve: here because of updates
 if state.plot_curve and check_num(factorize):
