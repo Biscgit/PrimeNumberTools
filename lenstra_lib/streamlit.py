@@ -10,7 +10,6 @@ def set_default_session(state: dict):
 
     state.input_point_x = None
     state.input_point_y = None
-    state.point_highlight = False
+    state.highlighted_points = []
 
     state.max_show = 10
-    state.calculation_show = False

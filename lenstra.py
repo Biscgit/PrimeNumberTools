@@ -1,3 +1,5 @@
+import typing
+
 import streamlit as st
 
 from lenstra_lib import *
@@ -33,24 +35,23 @@ def set_random_point():
     state.input_point_y = str(_p[1])
 
 
+def on_new_number():
+    state.highlighted_points = []
+
+
 # main site - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 st.title("Lenstra elliptic-curve factorization")
 factorize: str = st.text_input(
     "Set your Number $n$ to factorize",
     placeholder="Type number here",
-    on_change=lambda: check_num(factorize)
+    on_change=on_new_number,
 )
 
 call_factorize = False
 if factorize:
     if not check_num(factorize):
         st.error(r'$n\:$ is not a number!', icon="⚠️")
-    else:
-        fac_col = st.columns([15, 20, 65])
-        with fac_col[0]:
-            call_factorize = st.button("Factorize", type="primary", use_container_width=True)
-        with fac_col[1]:
-            call_try_factorize = st.button("Try until found", type="secondary", use_container_width=True)
+
 else:
     st.info("Enter a number to factorize", icon="ℹ️")
 
@@ -65,7 +66,7 @@ if call_factorize:
 st.header("Weierstrass Curve")
 st.markdown(r"With $\; y^2 \equiv x^3 + Ax + B \; mod \; n$")
 
-cols = st.columns([8, 8, 2, 4])
+cols = st.columns([8, 8, 2, 4, 1])
 with cols[2]:
     st.container(height=12, border=False)
     if st.button(
@@ -113,6 +114,13 @@ with cols[3]:
         ):
             state.plot_curve = not state.plot_curve
 
+with cols[4]:
+    st.container(height=18, border=False)
+    if state.plot_curve:
+        st.write("🟥")
+    else:
+        st.write("⬛️")
+
 if state.input_curve_a is not None and state.input_curve_b is not None:
     if not can_plot() and factorize not in [None, ""]:
         st.error('Your chosen parameters result in an invalid elliptic curve!', icon="❌")
@@ -123,7 +131,7 @@ else:
 curve_plot = st.container()
 
 st.header("Point on Curve")
-cols = st.columns([8, 8, 2, 4])
+cols = st.columns([8, 8, 2, 4, 1])
 with cols[2]:
     st.container(height=12, border=False)
     if st.button(
@@ -154,7 +162,7 @@ if not all([state.input_point_x, state.input_point_y]):
 elif not check_num(state.input_point_x) or not check_num(state.input_point_y):
     st.error("One of the coordinates is not a number!", icon="❌")
 
-elif not is_on_curve(
+elif check_num(factorize) and not is_on_curve(
         int(state.input_curve_a),
         int(state.input_curve_b),
         int(factorize),
@@ -163,25 +171,50 @@ elif not is_on_curve(
 ):
     st.error("Your point is not on the curve!", icon="❌")
 
+
+def toggle_highlight(x: typing.Any, y: typing.Any):
+    pair = (x, y)
+
+    if pair in state.highlighted_points:
+        state.highlighted_points.remove(pair)
+    else:
+        state.highlighted_points.append(pair)
+
+
 with cols[3]:
     st.container(height=12, border=False)
     if check_num(factorize):
         if st.button(
                 "Highlight",
                 use_container_width=True,
-                disabled=not can_plot(),
+                disabled=not can_plot() or not check_num(state.input_point_x) or not check_num(state.input_point_y),
         ):
-            state.point_highlight = not state.point_highlight
+            toggle_highlight(state.input_point_x, state.input_point_y)
+
+with cols[4]:
+    st.container(height=18, border=False)
+    if (state.input_point_x, state.input_point_y) in state.highlighted_points:
+        st.write("🔴")
+    else:
+        st.write("⚫")
 
 # execute factorization
 st.header("Calculation")
+# call_try_factorize = st.button("Try until found", type="secondary", use_container_width=True)
 
-if call_factorize or state.calculation_show:
-    state.calculation_show = True
+if not all([check_num(x) for x in [
+    factorize,
+    state.input_curve_a,
+    state.input_curve_b,
+    state.input_point_x,
+    state.input_point_y
+]]):
+    st.info("Enter missing values to start algorithm", icon="ℹ️")
 
+else:
     number = int(factorize)
     if number % 2 == 0:
-        st.warning("Number is divisible by 2", icon="⚠️")
+        st.warning(r"Number is even $\,→\,$ divisible by 2", icon="⚠️")
 
     else:
         max_show = 10
@@ -237,23 +270,38 @@ if call_factorize or state.calculation_show:
 
                 with col_outer[1]:
                     with st.container(border=True):
-                        cols = st.columns([8, 8, 2, 4])
+                        cols = st.columns([8, 8, 2, 4, 1])
+
+                        with cols[0]:
+                            if i < size - 1:
+                                if item[1]:
+                                    st.markdown(fr"$P_0 + P_{{{size - i - 2}}} = $")
+                                else:
+                                    st.markdown(fr"$2 \cdot P_{{{size - i - 2}}} = $")
 
                         with cols[1]:
-                            st.markdown(f"$P_{size - i - 1}({item[0].x}|{item[0].y})$")
+                            st.markdown(f"$P_{{{size - i - 1}}}({item[0].x}|{item[0].y})$")
 
                         with cols[3]:
-                            if st.button("Highlight", use_container_width=True, key=f"res_select_{i}"):
-                                state.input_point_x = item[0].x
-                                state.input_point_y = item[0].y
+                            if st.button(
+                                    "Highlight",
+                                    use_container_width=True,
+                                    key=f"res_select_{i}",
+                                    disabled=not can_plot(),
+                            ):
+                                toggle_highlight(item[0].x, item[0].y)
 
-# 65, 38, 37, 46, 16
+                        with cols[4]:
+                            if (item[0].x, item[0].y) in state.highlighted_points:
+                                st.write("🔴")
+                            else:
+                                st.write("⚫")
 
 # plot curve: here because of updates
-if state.plot_curve:
+if state.plot_curve and check_num(factorize):
     a = int(state.input_curve_a)
     b = int(state.input_curve_b)
     p = int(factorize)
 
-    point = (int(state.input_point_x), int(state.input_point_y)) if state.point_highlight else None
-    draw_curve(a, b, p, curve_plot, point)
+    # point = (int(state.input_point_x), int(state.input_point_y)) if state.point_highlight else None
+    draw_curve(a, b, p, curve_plot, state.highlighted_points)

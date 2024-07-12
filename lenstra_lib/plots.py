@@ -1,3 +1,5 @@
+import math
+
 import functools
 
 import typing
@@ -43,7 +45,7 @@ def is_on_curve(a: int, b: int, p: int, x: int, y: int) -> bool:
     return (x, y) in get_weierstrass_points(a, b, p)
 
 
-def draw_curve(a: int, b: int, p: int, cont: st.container, point: typing.Optional[tuple[int, int]] = None):
+def draw_curve(a: int, b: int, p: int, cont: st.container, highlighted: typing.Optional[list[tuple[int, int]]] = None):
     with cont:
         with st.spinner("plotting..."):
             points = get_weierstrass_points(a, b, p)
@@ -57,6 +59,7 @@ def draw_curve(a: int, b: int, p: int, cont: st.container, point: typing.Optiona
                 mode='markers',
                 hovertemplate='x=%{x}<br>y=%{y}<extra></extra>',
                 showlegend=False,
+                opacity=0.8
             ))
 
             # get all points with order 2 -> double for infinity
@@ -77,7 +80,10 @@ def draw_curve(a: int, b: int, p: int, cont: st.container, point: typing.Optiona
             ))
 
             # highlight
-            if point:
+            for point in highlighted:
+                if point[1] == math.inf:
+                    continue
+
                 fig.add_trace(go.Scatter(
                     x=[point[0]],
                     y=[point[1]],
