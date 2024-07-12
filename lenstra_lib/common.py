@@ -8,7 +8,7 @@ def check_num(value) -> bool:
     try:
         int(value)
         return True
-    except ValueError:
+    except (ValueError, TypeError):
         return False
 
 
