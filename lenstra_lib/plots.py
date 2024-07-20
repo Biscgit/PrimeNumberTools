@@ -57,7 +57,65 @@ def is_on_curve(a: int, b: int, p: int, x: int, y: int) -> bool:
     return pow(y, 2, p) % p == (pow(x, 3, p) + a * x + b) % p
 
 
-def draw_curve(a: int, b: int, p: int, cont: st.container, highlighted: typing.Optional[list[tuple[int, int]]] = None):
+def draw_multi_curve(
+        cont: st.container,
+        a: int,
+        b: int,
+        curve_mods: list[int],
+):
+    with cont:
+        with st.spinner("plotting..."):
+            p_max = max(curve_mods)
+            point_size = 12 - p_max.bit_length() // 2
+
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=[p_max + p_max // 100],
+                y=[p_max + p_max // 100],
+                mode='markers',
+                marker=dict(
+                    color=px.colors.qualitative.Plotly[0],
+                    size=point_size * 1.5,
+                    symbol="star-diamond",
+                ),
+                hovertext=f"Point 𝓞",
+                hoverinfo=["text"],
+                showlegend=False,
+            ))
+
+            marker_colors = px.colors.qualitative.Dark2
+            for i, p in enumerate(curve_mods, 1):
+                points = get_weierstrass_points(a, b, p)
+                _x = [i[0] for i in points]
+                _y = [i[1] for i in points]
+
+                fig.add_trace(go.Scatter(
+                    x=_x,
+                    y=_y,
+                    mode='markers',
+                    marker=dict(
+                        size=point_size,
+                        color=marker_colors[(i + 1) % len(marker_colors)],
+                    ),
+                    name=f"<b>Curve {i}</b>",
+                    hovertemplate='x=%{x}<br>y=%{y}<extra></extra>',
+                    opacity=1
+                ))
+
+            st.plotly_chart(
+                fig,
+                theme="streamlit",
+                use_container_width=True,
+            )
+
+
+def draw_curve(
+        a: int,
+        b: int,
+        p: int,
+        cont: st.container,
+        highlighted: typing.Optional[list[tuple[int, int]]] = None,
+):
     with cont:
         with st.spinner("plotting..."):
             points = get_weierstrass_points(a, b, p)
@@ -65,6 +123,7 @@ def draw_curve(a: int, b: int, p: int, cont: st.container, highlighted: typing.O
             _y = [i[1] for i in points]
 
             point_size = 12 - p.bit_length() // 2
+
             fig = go.Figure()
             fig.add_trace(go.Scatter(
                 x=_x,
@@ -74,8 +133,8 @@ def draw_curve(a: int, b: int, p: int, cont: st.container, highlighted: typing.O
                     size=point_size,
                 ),
                 hovertemplate='x=%{x}<br>y=%{y}<extra></extra>',
+                opacity=0.8,
                 showlegend=False,
-                opacity=0.8
             ))
 
             # get all points with order 2 -> double for infinity
@@ -120,7 +179,7 @@ def draw_curve(a: int, b: int, p: int, cont: st.container, highlighted: typing.O
                 theme="streamlit",
                 use_container_width=True,
                 selection_mode="points",
-                on_select="rerun"
+                on_select="rerun",
             )
 
             if len(selected["selection"]["points"]):
@@ -132,7 +191,6 @@ def draw_curve(a: int, b: int, p: int, cont: st.container, highlighted: typing.O
                 state.highlighted_points = [(s_point["x"], s_point["y"])]
 
                 # ToDo: solve that it works without rerun
-                print("trigger now")
                 st.rerun()
 
         st.markdown(fr"Plotted Weiterstrass Curve $\; y^2 \equiv x^3 + {a}x + {b} \; mod \; {p}\,$ "

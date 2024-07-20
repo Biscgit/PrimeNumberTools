@@ -3,14 +3,13 @@
 
 from __future__ import annotations
 
-import functools
+import dataclasses
 
 import typing
 
 import math
 import random
 import sympy
-import time
 
 # set number to be factorized
 number = 11
@@ -18,6 +17,16 @@ number = 11
 # adjust if too slow
 max_iterations = 10
 max_factor = 1_000
+
+
+@dataclasses.dataclass
+class OperationData:
+    current_point: WeierstrassPoint
+    last_point: typing.Optional[WeierstrassPoint]
+    base_point: typing.Optional[WeierstrassPoint]
+    is_operation_add: typing.Optional[bool]
+    slope: int | math.inf
+    scalar: int
 
 
 class InvalidCurve(Exception):
@@ -69,7 +78,7 @@ class WeierstrassPoint:
     def __eq__(self, other: WeierstrassPoint) -> bool:
         return self.x == other.x and self.y == other.y
 
-    def add(self, other: WeierstrassPoint) -> WeierstrassPoint:
+    def add(self, other: WeierstrassPoint) -> tuple[WeierstrassPoint, int | math.inf]:
         """Adds two points on the same elliptic curve
         Add the same point for point-doubling"""
 
@@ -81,24 +90,25 @@ class WeierstrassPoint:
 
         # match for infinite point
         if self.is_infinite():
-            return WeierstrassPoint(self.x, math.inf, curve)
+            return WeierstrassPoint(self.x, math.inf, curve), math.inf
         if other.is_infinite():
-            return WeierstrassPoint(other.x, math.inf, curve)
+            return WeierstrassPoint(other.x, math.inf, curve), math.inf
 
         # calculate slope s
         try:
             s = self.get_slope(other)
 
         except (ValueError, ZeroDivisionError):
-            return WeierstrassPoint(other.x, math.inf, curve)
+            return WeierstrassPoint(other.x, math.inf, curve), math.inf
 
         # calculate new coordinates x and y
         x = (pow(s, 2) - self.x - other.x) % curve.p
         y = (s * (self.x - x) - self.y) % curve.p
+        print(f"{x=} {y=} {s=}")
 
-        return WeierstrassPoint(x, y, curve)
+        return WeierstrassPoint(x, y, curve), s
 
-    def double(self) -> WeierstrassPoint:
+    def double(self) -> tuple[WeierstrassPoint, int]:
         return self.add(self)
 
     def get_slope(self, other: WeierstrassPoint) -> int:
@@ -110,27 +120,27 @@ class WeierstrassPoint:
         # point doubling
         if self == other:
             denominator = (2 * self.y)
-            numerator = (3 * pow(self.x, 2) + self.curve.a) % (p * denominator)
+            numerator = (3 * pow(self.x, 2) + self.curve.a) % p
 
         # point addition
         else:
             denominator = (other.x - self.x)
-            numerator = (other.y - self.y) % (p * denominator)
+            numerator = (other.y - self.y) % p
 
+        print(self, numerator, denominator)
         return numerator * pow(denominator, -1, p) % p
 
-    def lenstra_streamlit(self, max_iterations: int) -> typing.Generator[
-        tuple[WeierstrassPoint, bool, int], None, typing.Optional[int]]:
+    def lenstra_streamlit(self, max_iterations: int) -> typing.Generator[OperationData, None, typing.Optional[int]]:
 
+        print("--===--")
         point: WeierstrassPoint = self
         n: int = self.curve.p
 
         # @functools.lru_cache(maxsize=1024)
-        def lenstra_mul(scalar: int) -> typing.Generator[
-            tuple[WeierstrassPoint, bool, int], None, int]:
+        def lenstra_mul(scalar: int) -> typing.Generator[OperationData, None, int]:
             """Multiplies point by a scalar.
             On finding a point in infinity return true
-            yields [point, is_infinite, is_operation_add]
+            yields OperationData
             returns is_finished"""
 
             nonlocal point
@@ -140,9 +150,17 @@ class WeierstrassPoint:
                 bit = scalar >> (position - 1) & 0b1
 
                 # double
-                next_point: WeierstrassPoint = point.double()
+                next_point, slope = point.double()
 
-                yield next_point, False, scalar
+                # yield next_point, False, scalar, slope
+                yield OperationData(
+                    current_point=next_point,
+                    last_point=point,
+                    base_point=base_point,
+                    is_operation_add=False,
+                    slope=slope,
+                    scalar=scalar,
+                )
                 if next_point.is_infinite():
                     return math.gcd((point.x - next_point.x) % n, n)
 
@@ -151,9 +169,16 @@ class WeierstrassPoint:
 
                 # add
                 if bit:
-                    next_point = point.add(base_point)
+                    next_point, slope = point.add(base_point)
 
-                    yield next_point, True, scalar
+                    yield OperationData(
+                        current_point=next_point,
+                        last_point=point,
+                        base_point=base_point,
+                        is_operation_add=True,
+                        slope=slope,
+                        scalar=scalar,
+                    )
                     if next_point.is_infinite():
                         return math.gcd((point.x - next_point.x) % n, n)
 
@@ -161,7 +186,7 @@ class WeierstrassPoint:
                     point = next_point
 
         primes = list(sympy.primerange(sympy.prime(max_iterations) + 1))
-        primes = list(range(2, 1000))
+        # primes = list(range(2, 1000))
         for factor in primes:
             res = yield from lenstra_mul(factor)
 
@@ -215,7 +240,7 @@ class WeierstrassPoint:
 
 
 def streamlit_lenstra(curve: tuple, point: tuple, max_factor: int = 1_000) -> typing.Generator[
-    tuple[WeierstrassPoint, typing.Optional[bool], int], None, typing.Optional[int]]:
+    OperationData, None, typing.Optional[int]]:
     """Yields points while calculating"""
 
     x, y = point
@@ -227,7 +252,14 @@ def streamlit_lenstra(curve: tuple, point: tuple, max_factor: int = 1_000) -> ty
 
     elliptic_curve = WeierStrassEC(a, b, n)
     start_point = WeierstrassPoint(x, y, elliptic_curve)
-    yield start_point, None, 1
+    yield OperationData(
+        current_point=start_point,
+        last_point=None,
+        base_point=None,
+        is_operation_add=None,
+        scalar=1,
+        slope=0,
+    )
 
     factor = yield from start_point.lenstra_streamlit(max_factor)
     return factor

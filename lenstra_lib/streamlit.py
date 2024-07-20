@@ -13,3 +13,4 @@ def set_default_session(state: dict):
     state.highlighted_points = []
 
     state.max_show = 10
+    state.plot_factor_curves = False
