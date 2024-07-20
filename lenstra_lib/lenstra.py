@@ -104,7 +104,6 @@ class WeierstrassPoint:
         # calculate new coordinates x and y
         x = (pow(s, 2) - self.x - other.x) % curve.p
         y = (s * (self.x - x) - self.y) % curve.p
-        print(f"{x=} {y=} {s=}")
 
         return WeierstrassPoint(x, y, curve), s
 
@@ -127,12 +126,9 @@ class WeierstrassPoint:
             denominator = (other.x - self.x)
             numerator = (other.y - self.y) % p
 
-        print(self, numerator, denominator)
         return numerator * pow(denominator, -1, p) % p
 
     def lenstra_streamlit(self, max_iterations: int) -> typing.Generator[OperationData, None, typing.Optional[int]]:
-
-        print("--===--")
         point: WeierstrassPoint = self
         n: int = self.curve.p
 
@@ -156,7 +152,7 @@ class WeierstrassPoint:
                 yield OperationData(
                     current_point=next_point,
                     last_point=point,
-                    base_point=base_point,
+                    base_point=point,
                     is_operation_add=False,
                     slope=slope,
                     scalar=scalar,
@@ -186,7 +182,7 @@ class WeierstrassPoint:
                     point = next_point
 
         primes = list(sympy.primerange(sympy.prime(max_iterations) + 1))
-        # primes = list(range(2, 1000))
+        primes = list(range(2, 1000))
         for factor in primes:
             res = yield from lenstra_mul(factor)
 
@@ -263,41 +259,3 @@ def streamlit_lenstra(curve: tuple, point: tuple, max_factor: int = 1_000) -> ty
 
     factor = yield from start_point.lenstra_streamlit(max_factor)
     return factor
-
-
-def run_lenstra(n: int, stdout=False) -> int | None:
-    """Runs the full lenstra algorithm. This can be used by other modules.
-    Adjust the parameters at the top of this file"""
-
-    # filter even numbers
-    if (n - 1) & 0b1:
-        if stdout:
-            print(f"`{n=}` is an even number and dividable by 2 (with `q={n // 2}`)")
-        return 2
-
-    for i in range(max_iterations):
-        # limit random number size
-        x = random.randint(0, math.isqrt(n))
-        y = random.randint(0, math.isqrt(n))
-        a = random.randint(0, math.isqrt(n))
-        b = (pow(y, 2) - pow(x, 3) - a * x) % n
-
-        try:
-            # guaranteed point on the curve
-            elliptic_curve = WeierStrassEC(a, b, n)
-            start_point = WeierstrassPoint(x, y, elliptic_curve)
-
-        except InvalidCurve:
-            continue
-
-        if factor := start_point.lenstra():
-            if stdout:
-                print(f"Found factors `p={factor}` and `q={n // factor}` for `{n=}`\n"
-                      f"using Weierstrass (`{a=}`, `{b=}`)\nand Point `({x=}, {y=})`\n"
-                      f"on {i + 1}-{dict({1: 'st', 2: 'nd', 3: 'rd'}).get(i + 1, 'th')} iteration.\n")
-
-            return factor
-
-    if stdout:
-        print(f"No factors found! `{n=}` is probably prime or consists of too large factors.\n"
-              f"Increase max iterations or factor if not.\n")

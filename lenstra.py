@@ -265,6 +265,7 @@ else:
                             if check_num(factorize) and int(factorize) > 10_000:
                                 st.button(
                                     "$n$ too large",
+                                    key="button_plot_factor_curves",
                                     disabled=True,
                                     use_container_width=True,
                                 )
@@ -311,23 +312,21 @@ else:
 
             calculation_container = st.container()
 
-            cols = st.columns([5, 4, 20])
-            with cols[0]:
-                if st.button("Load more", disabled=state.max_show > size, use_container_width=True):
-                    state.max_show += 10
-
-            with cols[1]:
-                if st.button("Collapse", use_container_width=True):
-                    state.max_show = 10
+            if st.button("Load more", disabled=state.max_show > size):
+                state.max_show += 10
 
             with calculation_container:
                 last_item = items.pop(-1)
                 last_operation = -1
+                base_index = -1
 
                 containers: dict[int, st.container] = {}
                 cont_titles: dict[int, st.container] = {}
 
                 for i, item in enumerate(items):
+                    if i > state.max_show:
+                        break
+
                     if item.scalar != last_operation:
                         # this is very magic, do not touch
                         if last_operation > 0:
@@ -347,11 +346,10 @@ else:
                             actual = len([x for x in items if x.scalar == last_operation])
                             modifier = operations - actual
 
-                        st.markdown(fr"Calculating $\,{last_operation} \cdot P_{{{calc_index + modifier}}} = "
-                                    fr"P_{{{size - i - 1 + modifier}}}$")
+                        base_index = calc_index + modifier
 
-                    if i > state.max_show:
-                        break
+                        st.markdown(fr"Calculating $\,{last_operation} \cdot P_{{{base_index}}} = "
+                                    fr"P_{{{size - i - 1 + modifier}}}$")
 
                     col_outer = st.columns([1, 15])
                     with col_outer[0]:
@@ -364,14 +362,14 @@ else:
 
                     with col_outer[1]:
                         with st.container(border=True):
-                            cols = st.columns([6, 12, 4, 1])
+                            cols = st.columns([9, 21, 3])
 
                             with cols[0]:
                                 if i < size - 1:
                                     if item.is_operation_add:
                                         st.markdown(
                                             fr"$P_{{{size - i - 1}}}({item.current_point.x}|{item.current_point.y})\\"
-                                            fr"= P_0 + P_{{{size - i - 2}}}$")
+                                            fr"= P_{base_index} + P_{{{size - i - 2}}}$")
 
                                     else:
                                         st.markdown(
@@ -406,23 +404,21 @@ else:
 
                                 st.markdown(f"${calculation}$")
 
-                            with cols[2]:
-                                if st.button(
-                                        "Highlight",
-                                        use_container_width=True,
-                                        key=f"res_select_{i}",
-                                        disabled=not can_plot(),
-                                ):
-                                    toggle_highlight(item.current_point.x, item.current_point.y)
+                        with cols[2]:
+                            if st.button(
+                                    "💡",
+                                    key=f"res_select_{i}",
+                                    disabled=not can_plot(),
+                            ):
+                                toggle_highlight(item.current_point.x, item.current_point.y)
 
-                            with cols[3]:
-                                if (item.current_point.x, item.current_point.y) in state.highlighted_points:
-                                    st.write("🔴")
-                                else:
-                                    st.write("⚫")
+                            if (item.current_point.x, item.current_point.y) in state.highlighted_points:
+                                st.markdown('<p style="text-align: center;">🔴</p>', unsafe_allow_html=True)
+                            else:
+                                st.markdown('<p style="text-align: center;">⚫</p>', unsafe_allow_html=True)
 
 # plot curve: here because of updates
-if state.plot_curve and check_num(factorize):
+if state.plot_curve and check_num(factorize) and int(factorize) < 10_000:
     a = int(state.input_curve_a)
     b = int(state.input_curve_b)
     p = int(factorize)
