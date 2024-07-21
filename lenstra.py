@@ -1,3 +1,7 @@
+import math
+
+import random
+
 import typing
 
 import streamlit as st
@@ -65,11 +69,33 @@ def set_random_point() -> bool:
 # main site - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 st.title("Lenstra elliptic-curve factorization")
 
-factorize: str = st.text_input(
-    "Set your Number $n$ to factorize",
-    placeholder="Type number here",
-    on_change=reset_highlighted,
-)
+cols = st.columns([23, 2])
+with cols[0]:
+    factorize: str = st.text_input(
+        "Set your Number $n$ to factorize",
+        max_chars=20,
+        placeholder="Type number here",
+        on_change=reset_highlighted,
+    )
+
+with cols[1]:
+    st.container(height=12, border=False)
+    if st.button(
+            "🔀",
+            key="full_random_select",
+            use_container_width=True,
+            disabled=not check_num(factorize)
+    ):
+        limit = min([int(factorize), int(1e9)])
+
+        x = random.randint(0, limit)
+        y = random.randint(0, limit)
+        a = random.randint(0, limit)
+
+        state.input_point_x = x
+        state.input_point_y = y
+        state.input_curve_a = a
+        state.input_curve_b = (pow(y, 2) - pow(x, 3) - a * x) % int(factorize)
 
 call_factorize = False
 if factorize:
@@ -258,7 +284,7 @@ else:
                         with cols[0]:
                             st.container(height=1, border=False)
                             st.success(
-                                fr"Found factor $\, {result} \,$ with $\, {n}\, \vert \, {result} = {divider}$",
+                                fr"Found factor $\, {result} \,$ with $\, {n} = {result} \cdot {divider}$",
                                 icon="✅"
                             )
 
@@ -307,7 +333,10 @@ else:
 
                     else:
                         # with result_widget:
-                        st.error(fr"Found no valid factor", icon="❌")
+                        if items[0].current_point.y < math.inf:
+                            st.error(fr"Found no valid factor: Exceeded operations limit", icon="❌")
+                        else:
+                            st.error(fr"Found no valid factor: $\, gcd \,$ resulted in $1$ or $n$", icon="❌")
 
                     break
 
@@ -346,12 +375,11 @@ else:
                         modifier = 0
                         if i == 0 and last_operation > 2:
                             factor = last_operation % 2 ** (last_operation.bit_length() - 1)
-                            operations = factor.bit_length() + factor.bit_count()
+                            operations = factor.bit_length() + factor.bit_count() - 2
                             actual = len([x for x in items if x.scalar == last_operation])
-                            modifier = operations - actual
+                            # modifier = max(operations - actual, 0)
 
                         base_index = calc_index + modifier
-
                         st.markdown(fr"Calculating $\,{last_operation} \cdot P_{{{base_index}}} = "
                                     fr"P_{{{size - i - 1 + modifier}}}$")
 
@@ -406,6 +434,11 @@ else:
                                         fr"\; mod \; {item.current_point.curve.p}"
                                     )
 
+                                else:
+                                    calculation += (
+                                        fr"\\ q = gcd({item.last_point.x} - {item.current_point.x}, {n})"
+                                    )
+
                                 st.markdown(f"${calculation}$")
 
                         with cols[2]:
@@ -431,3 +464,6 @@ if state.plot_curve and check_num(factorize) and int(factorize) < MAX_PLOT_P:
 
 # long calc: 4567, 884, 1479, 423, 3129
 # long calc: 5767, 3494, 4821, 1623, 1169
+
+# ToDo: performance: getting all points on large ints for some reason?
+# ToDo: large integer design -> 999999000001

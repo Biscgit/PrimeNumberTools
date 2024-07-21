@@ -72,7 +72,7 @@ def draw_multi_curve(
     with cont:
         with st.spinner("plotting..."):
             p_max = max(curve_mods)
-            extended_max = int(p_max * 1.1)
+            extended_max = math.ceil(p_max * 1.05)
             point_size = 12 - p_max.bit_length() // 2
 
             fig = go.Figure()

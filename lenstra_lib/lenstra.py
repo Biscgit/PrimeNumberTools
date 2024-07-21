@@ -8,15 +8,10 @@ import dataclasses
 import typing
 
 import math
-import random
 import sympy
 
-# set number to be factorized
-number = 11
-
 # adjust if too slow
-max_iterations = 10
-max_factor = 1_000
+max_mul = 10_000
 
 
 @dataclasses.dataclass
@@ -176,13 +171,14 @@ class WeierstrassPoint:
                         scalar=scalar,
                     )
                     if next_point.is_infinite():
+                        print(point.x, next_point.x, n)
                         return math.gcd((point.x - next_point.x) % n, n)
 
                     assert next_point.is_on_curve()
                     point = next_point
 
-        primes = list(sympy.primerange(sympy.prime(max_iterations) + 1))
-        primes = list(range(2, 1000))
+        primes = list(sympy.primerange(sympy.prime(max_mul) + 1))
+        # primes = list(range(2, max_mul))
         for factor in primes:
             res = yield from lenstra_mul(factor)
 
