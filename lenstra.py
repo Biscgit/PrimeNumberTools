@@ -8,6 +8,8 @@ from lenstra_lib import *
 state = st.session_state
 set_default_session(state)
 
+MAX_PLOT_P = 25_000
+
 
 def reset_highlighted():
     state.highlighted_points = []
@@ -120,7 +122,7 @@ def can_plot() -> bool:
 
 with cols[3]:
     st.container(height=12, border=False)
-    if check_num(factorize) and int(factorize) > 10_000:
+    if check_num(factorize) and int(factorize) > MAX_PLOT_P:
         st.button(
             "$n$ too large",
             disabled=True,
@@ -160,7 +162,7 @@ with cols[2]:
     if st.button(
             "🔀",
             key="button_point",
-            disabled=check_num(factorize) and int(factorize) > 10_000 or not can_plot(),
+            disabled=check_num(factorize) and int(factorize) > MAX_PLOT_P or not can_plot(),
             use_container_width=True,
     ):
         if not set_random_point():
@@ -203,7 +205,7 @@ with cols[3]:
             "Highlight",
             use_container_width=True,
             disabled=not can_plot() or not check_num(state.input_point_x) or not check_num(
-                state.input_point_y) or check_num(factorize) and int(factorize) > 10_000,
+                state.input_point_y) or check_num(factorize) and int(factorize) > MAX_PLOT_P,
     ):
         toggle_highlight(state.input_point_x, state.input_point_y)
 
@@ -262,7 +264,9 @@ else:
 
                         with cols[1]:
                             st.container(height=9, border=False)
-                            if check_num(factorize) and int(factorize) > 10_000:
+                            limit_size = max([result, divider]) > int(MAX_PLOT_P * 0.2)
+
+                            if limit_size:
                                 st.button(
                                     "$n$ too large",
                                     key="button_plot_factor_curves",
@@ -286,14 +290,14 @@ else:
                             else:
                                 st.write("⬛️")
 
-                        if state.plot_factor_curves and check_num(factorize):
+                        if state.plot_factor_curves and check_num(factorize) and not limit_size:
                             container = st.container()
 
                             a = int(state.input_curve_a)
                             b = int(state.input_curve_b)
 
                             draw_multi_curve(
-                                container, a, b, [result, divider]
+                                container, a, b, int(factorize), [result, divider]
                             )
 
                             for i, num in enumerate([result, divider], 1):
@@ -369,7 +373,7 @@ else:
                                     if item.is_operation_add:
                                         st.markdown(
                                             fr"$P_{{{size - i - 1}}}({item.current_point.x}|{item.current_point.y})\\"
-                                            fr"= P_{base_index} + P_{{{size - i - 2}}}$")
+                                            fr"= P_{{{base_index}}} + P_{{{size - i - 2}}}$")
 
                                     else:
                                         st.markdown(
@@ -418,7 +422,7 @@ else:
                                 st.markdown('<p style="text-align: center;">⚫</p>', unsafe_allow_html=True)
 
 # plot curve: here because of updates
-if state.plot_curve and check_num(factorize) and int(factorize) < 10_000:
+if state.plot_curve and check_num(factorize) and int(factorize) < MAX_PLOT_P:
     a = int(state.input_curve_a)
     b = int(state.input_curve_b)
     p = int(factorize)

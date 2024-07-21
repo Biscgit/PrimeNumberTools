@@ -9,9 +9,9 @@ import streamlit as st
 import plotly.express as px
 from plotly.express.colors import qualitative as colors
 import plotly.graph_objects as go
+import numpy as np
 
 from .common import check_num
-from .lenstra import WeierstrassPoint, WeierStrassEC
 
 
 def get_random_col_emoji() -> tuple:
@@ -39,15 +39,20 @@ def only_check_weierstrass(a: int, b: int, p: int) -> bool:
 
 
 @functools.lru_cache()
-def get_weierstrass_points(a: int, b: int, p: int) -> list[tuple[int, int]]:
+def get_weierstrass_points(a: int, b: int, p: int, limit: int = None) -> list[tuple[int, int]]:
     points = []
+    max_iter = min([p, limit]) if limit else p
 
-    for x in range(p):
+    for x in range(max_iter):
         rhs = (pow(x, 3, p) + a * x + b) % p
 
-        for y in range(p // 2 + 1):
-            if pow(y, 2, p) == rhs:
-                points.extend([(x, y), (x, -y % p)])
+        array = np.arange(0, min([max_iter, p // 2 + 1]))
+        array = np.square(array)
+        array = array % p
+        indexes = np.where(array == rhs)[0]
+
+        points.extend([(x, y) for y in indexes])
+        points.extend([(x, n) for y in indexes if (n := -y % p) < max_iter])
 
     return points
 
@@ -61,17 +66,19 @@ def draw_multi_curve(
         cont: st.container,
         a: int,
         b: int,
+        base_mod: int,
         curve_mods: list[int],
 ):
     with cont:
         with st.spinner("plotting..."):
             p_max = max(curve_mods)
+            extended_max = int(p_max * 1.1)
             point_size = 12 - p_max.bit_length() // 2
 
             fig = go.Figure()
             fig.add_trace(go.Scatter(
-                x=[p_max + p_max // 100],
-                y=[p_max + p_max // 100],
+                x=[extended_max + extended_max // 100],
+                y=[extended_max + extended_max // 100],
                 mode='markers',
                 marker=dict(
                     color=px.colors.qualitative.Plotly[0],
@@ -84,6 +91,29 @@ def draw_multi_curve(
             ))
 
             marker_colors = px.colors.qualitative.Dark2
+
+            # add base points
+            points = get_weierstrass_points(a, b, base_mod, limit=extended_max)
+            # points = [(x, y) for x, y in points if x < extended_max and y < extended_max]
+
+            _x = [i[0] for i in points]
+            _y = [i[1] for i in points]
+
+            fig.add_trace(go.Scatter(
+                x=_x,
+                y=_y,
+                mode='markers',
+                marker=dict(
+                    size=point_size * 1.25,
+                    symbol="circle-open",
+                    color=px.colors.qualitative.Plotly[9],
+                    line=dict(width=3),
+                ),
+                name=f"<b>Original</b>",
+                hovertemplate='x=%{x}<br>y=%{y}<extra></extra>',
+            ))
+
+            # add other points
             for i, p in enumerate(curve_mods, 1):
                 points = get_weierstrass_points(a, b, p)
                 _x = [i[0] for i in points]
