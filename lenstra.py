@@ -372,10 +372,9 @@ else:
                         # special case with breaking while calculating a scalar
                         modifier = 0
                         if i == 0 and last_operation > 2:
-                            factor = last_operation % 2 ** (last_operation.bit_length() - 1)
-                            operations = factor.bit_length() + factor.bit_count() - 2
+                            operations = last_operation.bit_length() + last_operation.bit_count() - 2
                             actual = len([x for x in items if x.scalar == last_operation])
-                            # modifier = max(operations - actual, 0)
+                            modifier = max(operations - actual, 0)
 
                         base_index = calc_index + modifier
                         st.markdown(fr"Calculating $\,{last_operation} \cdot P_{{{base_index}}} = "
@@ -443,7 +442,7 @@ else:
                             if st.button(
                                     "💡",
                                     key=f"res_select_{i}",
-                                    disabled=not can_plot(),
+                                    disabled=i == 0,
                             ):
                                 toggle_highlight(item.current_point.x, item.current_point.y)
 
@@ -465,3 +464,5 @@ if state.plot_curve and check_num(factorize) and int(factorize) < MAX_PLOT_P:
 
 # ToDo: performance: getting all points on large ints for some reason?
 # ToDo: large integer design -> 999999000001
+
+
