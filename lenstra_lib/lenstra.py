@@ -171,7 +171,6 @@ class WeierstrassPoint:
                         scalar=scalar,
                     )
                     if next_point.is_infinite():
-                        print(point.x, next_point.x, n)
                         return math.gcd((point.x - next_point.x) % n, n)
 
                     assert next_point.is_on_curve()
@@ -187,48 +186,6 @@ class WeierstrassPoint:
 
     def __hash__(self) -> int:
         return hash((self.x, self.y, self.curve.p, self.curve.a, self.curve.b))
-
-    def lenstra(self) -> int | None:
-        """Runs the lenstra algorithm to find p in n = p * q
-        Returns an integer if found and None if nothing has been found."""
-
-        point = self
-        next_point = self
-        base_point = self
-
-        p = self.curve.p
-
-        def lenstra_mul(scalar: int) -> bool | None:
-            """Multiplies point by a scalar.
-            On finding a point in infinity return true"""
-
-            nonlocal point, next_point, base_point
-
-            for position in range(scalar.bit_length() - 1, 0, -1):
-                bit = scalar >> (position - 1) & 0b1
-
-                # double
-                if (next_point := point.double()).is_infinite():
-                    return True
-
-                point = next_point
-
-                # add
-                if bit:
-                    if (next_point := point.add(base_point)).is_infinite():
-                        return True
-
-                    point = next_point
-
-            base_point = point
-
-        # check points with [k!]G
-        for factorial in range(2, max_factor):
-            if lenstra_mul(factorial):
-                factor = math.gcd((point.x - next_point.x) % p, p)
-
-                # ensure the result is not 1 or p
-                return factor if p > factor > 1 else None
 
 
 def streamlit_lenstra(curve: tuple, point: tuple, max_factor: int = 1_000) -> typing.Generator[

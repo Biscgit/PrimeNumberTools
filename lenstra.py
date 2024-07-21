@@ -84,16 +84,19 @@ with cols[1]:
             use_container_width=True,
             disabled=not check_num(factorize)
     ):
-        limit = min([int(factorize), int(1e9)])
+        fact = int(factorize)
+        limit = min([fact, int(1e9)])
 
-        x = random.randint(0, limit)
-        y = random.randint(0, limit)
-        a = random.randint(0, limit)
+        x = random.randint(0, limit) % fact
+        y = random.randint(0, limit) % fact
+        a = random.randint(0, limit) % fact
 
         state.input_point_x = x
         state.input_point_y = y
         state.input_curve_a = a
-        state.input_curve_b = (pow(y, 2) - pow(x, 3) - a * x) % int(factorize)
+        state.input_curve_b = (pow(y, 2) - pow(x, 3) - a * x) % fact
+
+        reset_highlighted()
 
 call_factorize = False
 if factorize:
@@ -273,6 +276,9 @@ else:
                 try:
                     items.insert(0, next(iterator))
 
+                except InvalidCurve:
+                    st.stop()
+
                 except StopIteration as result:
                     if result.value:
                         result = int(result.value)
@@ -442,7 +448,7 @@ else:
                             if st.button(
                                     "💡",
                                     key=f"res_select_{i}",
-                                    disabled=i == 0,
+                                    disabled=i == 0 or not can_plot(),
                             ):
                                 toggle_highlight(item.current_point.x, item.current_point.y)
 
@@ -464,5 +470,3 @@ if state.plot_curve and check_num(factorize) and int(factorize) < MAX_PLOT_P:
 
 # ToDo: performance: getting all points on large ints for some reason?
 # ToDo: large integer design -> 999999000001
-
-
