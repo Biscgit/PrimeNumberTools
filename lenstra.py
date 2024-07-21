@@ -17,8 +17,8 @@ def reset_highlighted():
     state.highlighted_points = []
 
 
-def toggle_highlight(x: typing.Any, y: typing.Any):
-    pair = (x, y)
+def toggle_highlight(_x: typing.Any, _y: typing.Any):
+    pair = (_x, _y)
 
     if pair in state.highlighted_points:
         state.highlighted_points.remove(pair)
@@ -27,13 +27,13 @@ def toggle_highlight(x: typing.Any, y: typing.Any):
 
 
 def set_random_curve():
-    limit = int(factorize) or 100
+    curve_limit = int(factorize) or 100
 
     while True:
-        _a = random.randint(1, int(limit))
-        _b = random.randint(1, int(limit))
+        _a = random.randint(1, int(curve_limit))
+        _b = random.randint(1, int(curve_limit))
 
-        if valid_weierstrass(_a, _b, limit):
+        if valid_weierstrass(_a, _b, curve_limit):
             break
 
     state.input_curve_a = str(_a)
