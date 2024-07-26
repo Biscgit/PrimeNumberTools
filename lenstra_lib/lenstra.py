@@ -10,9 +10,6 @@ import typing
 import math
 import sympy
 
-# adjust if too slow
-max_mul = 10_000
-
 
 @dataclasses.dataclass
 class OperationData:
@@ -123,7 +120,7 @@ class WeierstrassPoint:
 
         return numerator * pow(denominator, -1, p) % p
 
-    def lenstra_streamlit(self, max_iterations: int) -> typing.Generator[OperationData, None, typing.Optional[int]]:
+    def lenstra_streamlit(self, max_mul: int, mode: int) -> typing.Generator[OperationData, None, typing.Optional[int]]:
         point: WeierstrassPoint = self
         n: int = self.curve.p
 
@@ -176,9 +173,19 @@ class WeierstrassPoint:
                     assert next_point.is_on_curve()
                     point = next_point
 
-        primes = list(sympy.primerange(sympy.prime(max_mul) + 1))
-        # primes = list(range(2, max_mul))
-        for factor in primes:
+        if mode == 0:
+            primes = sympy.primerange(sympy.prime(max_mul) + 1)
+        elif mode == 1:
+            primes = range(2, max_mul + 2).__iter__()
+        else:
+            raise NotImplementedError(f"Mode with index {mode} not implemented")
+
+        while True:
+            try:
+                factor = next(primes)
+            except StopIteration:
+                return None
+
             res = yield from lenstra_mul(factor)
 
             if res:
@@ -188,7 +195,7 @@ class WeierstrassPoint:
         return hash((self.x, self.y, self.curve.p, self.curve.a, self.curve.b))
 
 
-def streamlit_lenstra(curve: tuple, point: tuple, max_factor: int = 1_000) -> typing.Generator[
+def streamlit_lenstra(curve: tuple, point: tuple, mode: int, max_factor: int = 3_000) -> typing.Generator[
     OperationData, None, typing.Optional[int]]:
     """Yields points while calculating"""
 
@@ -210,5 +217,5 @@ def streamlit_lenstra(curve: tuple, point: tuple, max_factor: int = 1_000) -> ty
         slope=0,
     )
 
-    factor = yield from start_point.lenstra_streamlit(max_factor)
+    factor = yield from start_point.lenstra_streamlit(max_factor, mode)
     return factor

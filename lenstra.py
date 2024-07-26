@@ -279,8 +279,17 @@ else:
             x = int(state.input_point_x) % n
             y = int(state.input_point_y) % n
 
+            mode_options = ["Prime factors", "Factorial n!"]
+            mode_index = mode_options.index(
+                st.selectbox(
+                    "Calculation Mode",
+                    mode_options,
+                    key="select_factorization_mode"
+                )
+            )
+
             items = []
-            iterator = streamlit_lenstra((a, b, n), (x, y))
+            iterator = streamlit_lenstra((a, b, n), (x, y), mode_index)
 
             while True:
                 try:
