@@ -1,5 +1,6 @@
 import math
 import random
+import sympy
 import typing
 
 import streamlit as st
@@ -100,8 +101,17 @@ with cols[1]:
 
 call_factorize = False
 if factorize:
+
+    def is_prime(product: int) -> bool:
+        return sympy.isprime(product)
+
+
     if not check_num(factorize):
         st.error(r'$n\:$ is not a number!', icon="⚠️")
+
+    elif is_prime(int(factorize)):
+        st.warning(r"$n\:$ is a prime number!", icon="⚠️")
+
 
 else:
     st.info("Enter a number to factorize", icon="ℹ️")
