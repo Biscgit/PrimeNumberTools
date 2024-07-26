@@ -1,6 +1,6 @@
 import functools
 
-from multiprocessing import Process, Queue
+# from multiprocessing import Process, Queue
 
 
 @functools.lru_cache()
@@ -12,7 +12,7 @@ def check_num(value) -> bool:
         return False
 
 
-def get_points_compute(a: int, b: int, p: int, queue: Queue):
+"""def get_points_compute(a: int, b: int, p: int, queue: Queue):
     from sage.all import EllipticCurve, GF
 
     field = GF(p)
@@ -33,7 +33,7 @@ def old_get_points(a: int, b: int, p: int) -> list[tuple[int, int], int]:
     process.join()
 
     result = queue.get()
-    return result
+    return result"""
 
 # This does not work
 # print(get_points(3, 11, 17))
