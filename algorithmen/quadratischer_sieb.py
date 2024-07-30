@@ -4,8 +4,6 @@ import typing
 
 import numpy as np
 
-from algorithmen.primzahltest import ggt
-
 
 def smoothness_bound(N):
     logN = math.log(N)
@@ -21,15 +19,15 @@ def quad_residue(a, n):
     if x == 0:
         return 1
 
-    a = a % n
+    a = pow(int(a), 1, int(n))
     z = 1
     while x != 0:
         if x % 2 == 0:
-            a = (a**2) % n
+            a = pow(a, 2, int(n))
             x //= 2
         else:
             x -= 1
-            z = (z * a) % n
+            z = pow((z * a), 1, int(n))
 
     return z
 
@@ -49,9 +47,17 @@ class quadratic_sieve:
         self.perfect_square = []
 
     def compute_tonelli(self, prime, x, number):
-        response, _ = tonnelli_shanks(number, int(prime))
-        t1 = (-x - response) % prime
-        t2 = (-x + response) % prime
+        response, _ = tonnelli_shanks(int(number), int(prime))
+        t1 = (
+            (pow(int(-x), 1, int(prime)) - pow(int(response), 1, int(prime))) % prime
+            if response is not None
+            else -1
+        )
+        t2 = (
+            (pow(int(-x), 1, int(prime)) + pow(int(response), 1, int(prime))) % prime
+            if response is not None
+            else -1
+        )
         return t1, t2
 
     def compute_smooth_exponents(
@@ -86,15 +92,6 @@ class quadratic_sieve:
         return primes, np.vstack(ts).transpose()
 
     def factorise(self):
-        # (N**1/2 + x) - N = y_not_works for x in range(1, n)
-        # y_not_works factorise this
-        # only use those whos are under the smoothness bound (b)
-        # calculate a perfect prime with multiplying different y_not_works's
-        # do it over a matrix, with only having all exponents % 2 -> y
-        # x**2 = y**2 % N
-        # gcd(x-y, N)
-        # n > b !!
-
         # Calculating array for sieving
         i_array = np.arange(self.n)
         y_array = (self.x + i_array) ** 2 - self.number
@@ -116,8 +113,8 @@ class quadratic_sieve:
         self.exponents = exponents
         self.exp = int(np.prod(self.primes ** (exponents / 2)) % self.number)
         self.factor1, self.factor2 = (
-            ggt(int(self.base - self.exp), self.number),
-            ggt(int(self.base + self.exp), self.number),
+            math.gcd(int(self.base - self.exp), self.number),
+            math.gcd(int(self.base + self.exp), self.number),
         )
 
     def fast_gaussian_elimination(self, matrix: np.array) -> np.array:
@@ -135,20 +132,20 @@ class quadratic_sieve:
                 matrix[:, cond] ^= matrix[:, [i]]
         marked_rows = matrix[row_is_marked, :]
         unmarked_rows_with_zeros = matrix[~row_is_marked, :]
-        unmarked_rows = unmarked_rows_with_zeros[
+        unmarked_row = unmarked_rows_with_zeros[
             ~np.all(unmarked_rows_with_zeros == 0, axis=1)
         ][0]
         dependent_rows = np.any(
-            marked_rows[:, np.newaxis, :] & unmarked_rows[np.newaxis], axis=-1
+            marked_rows[:, np.newaxis, :] & unmarked_row[np.newaxis], axis=-1
         ).transpose()[0]
         perfect_zero = np.concatenate(
-            (unmarked_rows[np.newaxis], (marked_rows[dependent_rows, :]))
+            (unmarked_row[np.newaxis], (marked_rows[dependent_rows, :]))
         )
         indexes = np.any(np.all(matrix[:, None] == perfect_zero, axis=2), axis=1)
         perfect_square = org_mat[indexes, :]
 
         self.unmarked = marked_rows
-        self.unmarked_rows = unmarked_rows
+        self.unmarked_row = unmarked_row
         self.dependent_rows = dependent_rows
         self.indexes = indexes
         self.perfect_square = perfect_square
@@ -194,12 +191,13 @@ def tonnelli_shanks(rhs: int, p: int) -> typing.Optional[tuple[int, int]]:
             try:
                 d = pow(c, pow(2, m - i - 1), p)
 
-            except TypeError:
+            except TypeError as e:
+                print(e)
                 return None, None
 
             # set common variables
             c = pow(d, 2, p)
-            y = (y * d) % p
+            y = pow(y * d, 1, p)
             t = (t * pow(d, 2)) % p
             m = i
 

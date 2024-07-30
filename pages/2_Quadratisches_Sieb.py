@@ -43,37 +43,55 @@ factorize: str = st.text_input(
 if factorize == "":
     st.info("Enter a number to factorize", icon="ℹ️")
 else:
-    try:
-        f = factorise(factorize)
-        sieving_result = sieving(f.primes, f.org_mat, f.x, f.number)
-        with st.expander("Sieving", expanded=True):
-            for i in sieving_result:
-                st.write(i)
+    # try:
+    f = factorise(factorize)
+    sieving_result = sieving(f.primes, f.org_mat, f.x, f.number)
+    with st.expander("Explaination"):
+        st.write(
+            r"Fermat's factorization is very simple its based on the equation of the differnce of two squares ($x^2 - y^2 = (x-y)(x+y)$). Thats also corresponds to this: $x^2 - y^2 = N$, that we are able to rewrite to $x^2 - N = y^2$. For the algo x is predefind ($x = \left \lceil{\sqrt{N}}\right \rceil $), will be increased everytime until a y is found that is a perfect square. As this only works for little numbers, as there a not so much perfect squares, the quadratic sieve was implemented, which is based on the Fermat's factorization, but a lot faster. It has slightly modified the formula: $x^2 - y^2 = kN, k>1$, otherwise it would just be Fermat. So if this applies, the greatest common divisor from $x-y$ and $N$ ($gcd(x-y,N)$ is a factor of N, as $gcd(x+y, n)$ is the other factor."
+        )
+    with st.expander("Sieving", expanded=True):
+        st.write(
+            "So first we need to calculate $x$. And calculate $(x+i)^2-N for i in n, but now we don't look for a perfect sqaure, but factorize our results we got."
+        )
+        st.write(rf"$x = {f.x} = \left \lceil{{\sqrt{{{f.number}}}}} \right \rceil$")
+        st.write(
+            rf"$b = {f.b} = \exp\left( \sqrt{{\frac{{\log {f.number} \log \log {f.number}}}{{2}}}} \right)$"
+        )
+        st.write(
+            rf"$n = {f.n} =  \left \lfloor{{\frac{{\sqrt{{{f.number}}}}}{{\log{{{f.number}}}}}}} \right \rfloor$"
+        )
+        for i in sieving_result:
+            st.write(i)
 
-        with st.expander("Fast Gaussian Elimination", expanded=True):
-            for i in f.org_mat:
-                st.write(f"{i}")
+    with st.expander("Fast Gaussian Elimination", expanded=True):
+        st.markdown(
+            "Next we want to combine some of the previous results to get a perfect square. That is easily done over matrix of the $exponents \%2$. You just need to calculate the left null space. The [Fast Gaussian Elimination](https://www.cs.umd.edu/~gasarch/TOPICS/factoring/fastgauss.pdf) is a fast way of doing that"
+        )
 
-        with st.expander("Setting relation", expanded=True):
-            exponents = []
-            for row in f.perfect_square:
-                exponents += [f"({nice_primes(f.primes, row)})"]
-            numbers = np.nonzero(f.indexes)[0] + f.x
-            st.write(
-                rf"$ {"*".join(numbers.astype(str) + "^2")} \equiv {"*".join(exponents)} \% {f.number}$"
-            )
-            st.write(
-                rf"$ ({"*".join(numbers.astype(str))})^2 \equiv {nice_primes(f.primes, f.exponents)} \% {f.number}$"
-            )
-            st.write(
-                rf"$ {np.prod(numbers)}^2 \equiv {nice_primes(f.primes, f.exponents//2)} \% {f.number}$"
-            )
-            st.write(
-                rf"$ {np.prod(numbers) % f.number}^2 \equiv {np.prod(f.primes**(f.exponents//2))}^2 \% {f.number}$"
-            )
-            st.write(rf"Faktor 1: $gcd({f.base} - {f.exp}, {f.number}) = {f.factor1}$")
-            st.write(rf"Faktor 2: $gcd({f.base} + {f.exp}, {f.number}) = {f.factor2}$")
-            # st.write(f"Faktor 1 ist: {f.factor1}\nFaktor 2 ist: {f.factor2}")
-    except Exception as e:
-        print(e)
-        st.warning("Can't use your input!", icon="⚠️")
+        for i in f.org_mat:
+            st.write(f"{i}")
+
+    with st.expander("Setting relation", expanded=True):
+        exponents = []
+        for row in f.perfect_square:
+            exponents += [f"({nice_primes(f.primes, row)})"]
+        numbers = np.nonzero(f.indexes)[0] + f.x
+        st.write(
+            rf"$ {"*".join(numbers.astype(str) + "^2")} \equiv {"*".join(exponents)} \% {f.number}$"
+        )
+        st.write(
+            rf"$ ({"*".join(numbers.astype(str))})^2 \equiv {nice_primes(f.primes, f.exponents)} \% {f.number}$"
+        )
+        st.write(
+            rf"$ {np.prod(numbers)}^2 \equiv {nice_primes(f.primes, f.exponents//2)} \% {f.number}$"
+        )
+        st.write(
+            rf"$ {np.prod(numbers) % f.number}^2 \equiv {np.prod(f.primes**(f.exponents//2))}^2 \% {f.number}$"
+        )
+        st.write(rf"Faktor 1: $gcd({f.base} - {f.exp}, {f.number}) = {f.factor1}$")
+        st.write(rf"Faktor 2: $gcd({f.base} + {f.exp}, {f.number}) = {f.factor2}$")
+        # st.write(f"Faktor 1 ist: {f.factor1}\nFaktor 2 ist: {f.factor2}")
+#    except Exception as e:
+#     print(e)
+#       st.warning("Can't use your input!", icon="⚠️")
