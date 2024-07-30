@@ -195,8 +195,8 @@ class WeierstrassPoint:
         return hash((self.x, self.y, self.curve.p, self.curve.a, self.curve.b))
 
 
-def streamlit_lenstra(curve: tuple, point: tuple, mode: int, max_factor: int = 3_000) -> typing.Generator[
-    OperationData, None, typing.Optional[int]]:
+def streamlit_lenstra(curve: tuple, point: tuple, mode: int, max_factor: int = 3_000) -> typing.Generator \
+        [OperationData, None, typing.Optional[int]]:
     """Yields points while calculating"""
 
     x, y = point

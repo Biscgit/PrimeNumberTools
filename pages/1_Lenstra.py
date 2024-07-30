@@ -289,7 +289,7 @@ else:
             )
 
             items = []
-            iterator = streamlit_lenstra((a, b, n), (x, y), mode_index)
+            iterator = streamlit_lenstra((a, b, n), (x, y), mode_index, max_factor=10_000)
 
             while True:
                 try:
