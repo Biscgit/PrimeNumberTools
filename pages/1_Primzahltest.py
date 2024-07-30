@@ -318,3 +318,4 @@ if option == "Agrawal-Kayal-Saxena-Primzahltest":
         st.write(f"{number} ist eine Primzahl.")
     else:
         st.write(f"{number} ist keine Primzahl.")
+
