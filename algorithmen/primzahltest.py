@@ -242,6 +242,9 @@ number = st.number_input("Welche Zahl soll geprüft werden?", value=1, min_value
 #st.write(f"Die ausgewählte zu testende Zahl lautet: " + str(number))
 #st.write(f"Der ausgewählte Primzahltest lautet: " + str(option))
 
+# True  --> prim
+# False --> zusammengesetzt
+
 if option == "Bruteforce-Methode":
     st.write("Die Bruteforce-Methode probiert alle Zahlen von 2 bis zur Wurfel aus " + str(number)+ " durch.")
     if bruteforce(number, verbose):
@@ -317,21 +320,3 @@ if option == "Agrawal-Kayal-Saxena-Primzahltest":
         st.write(f"{number} ist eine Primzahl.")
     else:
         st.write(f"{number} ist keine Primzahl.")
-
-
-
-
-
-    # True  --> vermutlich prim
-    # False --> zusammengesetzt
-    # Primzahltest
-#bruteforce(number, True)
-    # eratosthenes(number, True)
-    # atkin(number, True)
-    # fermat(number, True)
-    # solovaystrassen(number, runden, True)
-    # millerrabin(number, runden, True)
-    # aks(number, True)
-    # Primzahlzerlegung
-    # pollard(number, True)
-    # williams(number, True)
