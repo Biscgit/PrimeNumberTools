@@ -1,9 +1,17 @@
+import math
 import random
 import typing
 
 import numpy as np
 
 from algorithmen.primzahltest import ggt
+
+
+def smoothness_bound(N):
+    logN = math.log(N)
+    logLogN = math.log(logN)
+    B = math.exp(math.sqrt(logN * logLogN / 2))
+    return B
 
 
 def quad_residue(a, n):
@@ -27,24 +35,28 @@ def quad_residue(a, n):
 
 
 class quadratic_sieve:
-    def __init__(self, number: int, n: int, b: int):
+    def __init__(self, number: int, n: int = None, b: int = None):
         self.number = number
-        self.n = n
-        self.b = b
+        self.b = b or int(smoothness_bound(number))
+        self.n = n or int(math.sqrt(number) / math.log(number))
         self.x = int(number ** (1 / 2)) + 1
-        self.primes, self.ts = self.get_primes(number, b, self.x)
+        self.primes, self.ts = self.get_primes(number, self.b, self.x)
+        self.org_mat = []
+        self.unmarked = []
+        self.unmarked_rows = []
+        self.dependent_rows = []
+        self.indexes = []
+        self.perfect_square = []
 
     def compute_tonelli(self, prime, x, number):
         response, _ = tonnelli_shanks(number, int(prime))
         t1 = (-x - response) % prime
         t2 = (-x + response) % prime
-        print(t1, t2)
         return t1, t2
 
     def compute_smooth_exponents(
         self, j: int, prime: int, i: int, x: int, number: int, y: int
     ) -> int:
-        # print("Smooth_exponent: ", j, prime)
         if not any(i % prime == k for k in self.ts[j]):
             return 0
         exponent = 0
@@ -56,7 +68,6 @@ class quadratic_sieve:
         return exponent
 
     def compute_smooth_primes(self, i: int, y: int, x: int, number: int) -> np.array:
-        # print("Smooth_prime: ", y, i)
         return np.vectorize(self.compute_smooth_exponents)(
             np.arange(len(self.primes)), self.primes, i, x, number, y
         )
@@ -88,8 +99,6 @@ class quadratic_sieve:
         i_array = np.arange(self.n)
         y_array = (self.x + i_array) ** 2 - self.number
         smooth_primes = []
-        print("Start")
-        smooth_primes = []
 
         for idx, y in enumerate(y_array):
             factors = self.compute_smooth_primes(idx, y, self.x, self.number)
@@ -100,26 +109,26 @@ class quadratic_sieve:
             )
 
         fast_matrix = np.array(smooth_primes)
-        # print(fast_matrix)
         perfect_square = self.fast_gaussian_elimination(fast_matrix)
         indexes = np.any(np.all(fast_matrix[:, None] == perfect_square, axis=2), axis=1)
-        a = np.prod(np.nonzero(indexes)[0] + self.x) % self.number
-        exponents = np.sum(perfect_square, axis=0) / 2
-        b = np.prod(self.primes**exponents)
-        print(a)
-        print(b)
-        return ggt(a - b, self.number), ggt(a + b, self.number)
+        self.base = np.prod(np.nonzero(indexes)[0] + self.x) % self.number
+        exponents = np.sum(perfect_square, axis=0)
+        self.exponents = exponents
+        self.exp = int(np.prod(self.primes ** (exponents / 2)) % self.number)
+        self.factor1, self.factor2 = (
+            ggt(int(self.base - self.exp), self.number),
+            ggt(int(self.base + self.exp), self.number),
+        )
 
     def fast_gaussian_elimination(self, matrix: np.array) -> np.array:
         org_mat = matrix.copy()
+        self.org_mat = matrix.copy()
         matrix = np.mod(matrix, 2)
         rows, columns = matrix.shape
         row_is_marked = np.zeros(rows, dtype=bool)
-        pivots = [-1] * columns
         for i in range(columns):
             pivot = np.nonzero(matrix[:, i] == 1)[-1]
             if len(pivot) != 0:
-                pivots[i] = pivot[0]
                 row_is_marked[pivot[0]] = True
                 cond = matrix[pivot[0], :] == 1
                 cond[i] = False
@@ -128,18 +137,21 @@ class quadratic_sieve:
         unmarked_rows_with_zeros = matrix[~row_is_marked, :]
         unmarked_rows = unmarked_rows_with_zeros[
             ~np.all(unmarked_rows_with_zeros == 0, axis=1)
-        ]
+        ][0]
         dependent_rows = np.any(
-            marked_rows[:, np.newaxis, :] & unmarked_rows[np.newaxis, :, :], axis=-1
+            marked_rows[:, np.newaxis, :] & unmarked_rows[np.newaxis], axis=-1
         ).transpose()[0]
-        print("marked: ", marked_rows)
-        print("unmarked: ", unmarked_rows)
-        print("dependent: ", dependent_rows)
-        perfect_zero = np.concatenate((unmarked_rows, (marked_rows[dependent_rows, :])))
+        perfect_zero = np.concatenate(
+            (unmarked_rows[np.newaxis], (marked_rows[dependent_rows, :]))
+        )
         indexes = np.any(np.all(matrix[:, None] == perfect_zero, axis=2), axis=1)
-        print("indexes: ", indexes)
         perfect_square = org_mat[indexes, :]
 
+        self.unmarked = marked_rows
+        self.unmarked_rows = unmarked_rows
+        self.dependent_rows = dependent_rows
+        self.indexes = indexes
+        self.perfect_square = perfect_square
         return perfect_square
 
 
@@ -151,8 +163,6 @@ def tonnelli_shanks(rhs: int, p: int) -> typing.Optional[tuple[int, int]]:
 
     # check for shortcut
     if s == 1:
-        print(f"Shortcut possible because {s=}")
-
         y_pos = pow(rhs, (p + 1) // 4, p)
         y_neg = pow(-rhs, (p + 1) // 4, p)
 
@@ -194,30 +204,3 @@ def tonnelli_shanks(rhs: int, p: int) -> typing.Optional[tuple[int, int]]:
             m = i
 
         return y, (-y) % p
-        """primes = [
-            x
-            for x in range(2, b + 1)
-            if all(x % i != 0 for i in range(2, int(x**0.5) + 1))
-            and quad_residue(x, number)
-        ]"""
-        """for j in primes:
-            response, _ = tonnelli_shanks(number, j)
-            t1 = (-x - response) % j
-            t2 = (-x + response) % j
-            ts.append((t1, t2))"""
-
-        """for i in range(n):
-            smooth_exponents = []
-            y = (x + i) ** 2 - number
-            for j, p in enumerate(primes):
-                if not any(i % p == k for k in ts[j]):
-                    smooth_exponents.append(0)
-                    continue
-                exponent = 0
-                while True:
-                    if y % p != 0:
-                        break
-                    y = y // p
-                    exponent += 1
-                smooth_exponents.append(exponent % 2)
-            smooth_primes.append(smooth_exponents) if y == 1 else None"""
