@@ -2,6 +2,7 @@ import random
 import typing
 
 import numpy as np
+from primzahltest import ggt
 
 
 def quad_residue(a, n):
@@ -91,40 +92,53 @@ class quadratic_sieve:
 
         for idx, y in enumerate(y_array):
             factors = self.compute_smooth_primes(idx, y, self.x, self.number)
-            if np.prod(self.primes**factors) == y:
-                smooth_primes.append(factors)
+            smooth_primes.append(
+                factors
+                if np.prod(self.primes**factors) == y
+                else np.zeros(self.primes.shape[0], dtype=int)
+            )
 
         fast_matrix = np.array(smooth_primes)
         # print(fast_matrix)
-        print(self.fast_gaussian_elimination(fast_matrix))
+        perfect_square = self.fast_gaussian_elimination(fast_matrix)
+        indexes = np.any(np.all(fast_matrix[:, None] == perfect_square, axis=2), axis=1)
+        a = np.prod(np.nonzero(indexes)[0] + self.x) % self.number
+        exponents = np.sum(perfect_square, axis=0) / 2
+        b = np.prod(self.primes**exponents)
+        print(a)
+        print(b)
+        return ggt(a - b, self.number), ggt(a + b, self.number)
 
     def fast_gaussian_elimination(self, matrix: np.array) -> np.array:
+        org_mat = matrix.copy()
         matrix = np.mod(matrix, 2)
         rows, columns = matrix.shape
-        row_is_marked = np.array([False] * rows)
+        row_is_marked = np.zeros(rows, dtype=bool)
         pivots = [-1] * columns
         for i in range(columns):
             pivot = np.nonzero(matrix[:, i] == 1)[-1]
             if len(pivot) != 0:
-                print(pivot)
                 pivots[i] = pivot[0]
                 row_is_marked[pivot[0]] = True
                 cond = matrix[pivot[0], :] == 1
                 cond[i] = False
                 matrix[:, cond] ^= matrix[:, [i]]
-                print(matrix)
-        print(matrix)
         marked_rows = matrix[row_is_marked, :]
-        unmarked_rows = matrix[~row_is_marked, :]
+        unmarked_rows_with_zeros = matrix[~row_is_marked, :]
+        unmarked_rows = unmarked_rows_with_zeros[
+            ~np.all(unmarked_rows_with_zeros == 0, axis=1)
+        ]
         dependent_rows = np.any(
             marked_rows[:, np.newaxis, :] & unmarked_rows[np.newaxis, :, :], axis=-1
         ).transpose()[0]
         print("marked: ", marked_rows)
         print("unmarked: ", unmarked_rows)
         print("dependent: ", dependent_rows)
-        perfect_square = np.concatenate(
-            (unmarked_rows, (marked_rows[dependent_rows, :]))
-        )
+        perfect_zero = np.concatenate((unmarked_rows, (marked_rows[dependent_rows, :])))
+        indexes = np.any(np.all(matrix[:, None] == perfect_zero, axis=2), axis=1)
+        print("indexes: ", indexes)
+        perfect_square = org_mat[indexes, :]
+
         return perfect_square
 
 
