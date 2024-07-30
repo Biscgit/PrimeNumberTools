@@ -61,16 +61,25 @@ else:
         st.write(
             rf"$n = {f.n} =  \left \lfloor{{\frac{{\sqrt{{{f.number}}}}}{{\log{{{f.number}}}}}}} \right \rfloor$"
         )
+        st.write(
+            f"For simple reason only numbers, that have primefactors under {f.b} will be printed."
+        )
         for i in sieving_result:
             st.write(i)
 
     with st.expander("Fast Gaussian Elimination", expanded=True):
         st.markdown(
-            "Next we want to combine some of the previous results to get a perfect square. That is easily done over matrix of the $exponents \%2$. You just need to calculate the left null space. The [Fast Gaussian Elimination](https://www.cs.umd.edu/~gasarch/TOPICS/factoring/fastgauss.pdf) is a fast way of doing that"
+            "Next we want to combine some of the previous results to get a perfect square. That is easily done over matrix of the $exponents \% 2$. This is best done with matrices. You just need to calculate the left null space. The [Fast Gaussian Elimination](https://www.cs.umd.edu/~gasarch/TOPICS/factoring/fastgauss.pdf) is a fast way of doing that"
         )
 
         for i in f.org_mat:
             st.write(f"{i}")
+        st.write("Out of this, we will get this:")
+        st.write("")
+        for i in f.perfect_square:
+            st.write(f"{i}")
+        st.write("and this adds up to:")
+        st.write(f"{np.zeros(f.org_mat.shape[1], dtype=int)}")
 
     with st.expander("Setting relation", expanded=True):
         exponents = []
