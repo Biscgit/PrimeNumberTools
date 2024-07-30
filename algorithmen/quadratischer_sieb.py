@@ -1,9 +1,17 @@
+import math
 import random
 import typing
 
 import numpy as np
 
 from algorithmen.primzahltest import ggt
+
+
+def smoothness_bound(N):
+    logN = math.log(N)
+    logLogN = math.log(logN)
+    B = math.exp(math.sqrt(logN * logLogN / 2))
+    return B
 
 
 def quad_residue(a, n):
@@ -27,12 +35,13 @@ def quad_residue(a, n):
 
 
 class quadratic_sieve:
-    def __init__(self, number: int, n: int, b: int):
+    def __init__(self, number: int, n: int = None, b: int = None):
         self.number = number
-        self.n = n
-        self.b = b
+        self.b = b or int(smoothness_bound(number))
+        self.n = n or int(math.sqrt(number) / math.log(number))
+        print(self.b, self.n)
         self.x = int(number ** (1 / 2)) + 1
-        self.primes, self.ts = self.get_primes(number, b, self.x)
+        self.primes, self.ts = self.get_primes(number, self.b, self.x)
 
     def compute_tonelli(self, prime, x, number):
         response, _ = tonnelli_shanks(number, int(prime))
@@ -105,7 +114,7 @@ class quadratic_sieve:
         indexes = np.any(np.all(fast_matrix[:, None] == perfect_square, axis=2), axis=1)
         a = np.prod(np.nonzero(indexes)[0] + self.x) % self.number
         exponents = np.sum(perfect_square, axis=0) / 2
-        b = np.prod(self.primes**exponents)
+        b = np.prod(self.primes**exponents) % self.number
         print(a)
         print(b)
         return ggt(a - b, self.number), ggt(a + b, self.number)
@@ -113,13 +122,12 @@ class quadratic_sieve:
     def fast_gaussian_elimination(self, matrix: np.array) -> np.array:
         org_mat = matrix.copy()
         matrix = np.mod(matrix, 2)
+        print(matrix)
         rows, columns = matrix.shape
         row_is_marked = np.zeros(rows, dtype=bool)
-        pivots = [-1] * columns
         for i in range(columns):
             pivot = np.nonzero(matrix[:, i] == 1)[-1]
             if len(pivot) != 0:
-                pivots[i] = pivot[0]
                 row_is_marked[pivot[0]] = True
                 cond = matrix[pivot[0], :] == 1
                 cond[i] = False
@@ -128,18 +136,20 @@ class quadratic_sieve:
         unmarked_rows_with_zeros = matrix[~row_is_marked, :]
         unmarked_rows = unmarked_rows_with_zeros[
             ~np.all(unmarked_rows_with_zeros == 0, axis=1)
-        ]
+        ][0]
         dependent_rows = np.any(
-            marked_rows[:, np.newaxis, :] & unmarked_rows[np.newaxis, :, :], axis=-1
+            marked_rows[:, np.newaxis, :] & unmarked_rows[np.newaxis], axis=-1
         ).transpose()[0]
-        print("marked: ", marked_rows)
-        print("unmarked: ", unmarked_rows)
-        print("dependent: ", dependent_rows)
-        perfect_zero = np.concatenate((unmarked_rows, (marked_rows[dependent_rows, :])))
+        perfect_zero = np.concatenate(
+            (unmarked_rows[np.newaxis], (marked_rows[dependent_rows, :]))
+        )
         indexes = np.any(np.all(matrix[:, None] == perfect_zero, axis=2), axis=1)
-        print("indexes: ", indexes)
         perfect_square = org_mat[indexes, :]
 
+        self.marked = marked_rows
+        self.unmarked = unmarked_rows
+        self.dependent = dependent_rows
+        self.indexes = indexes
         return perfect_square
 
 
