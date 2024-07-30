@@ -373,12 +373,12 @@ else:
                         # with result_widget:
                         if items[0].current_point.y < math.inf:
                             st.error(
-                                rf"Found no valid factor: Exceeded operations limit",
+                                r"Found no valid factor: Exceeded operations limit",
                                 icon="❌",
                             )
                         else:
                             st.error(
-                                rf"Found no valid factor: $\, gcd \,$ resulted in $1$ or $n$",
+                                r"Found no valid factor: $\, gcd \,$ resulted in $1$ or $n$",
                                 icon="❌",
                             )
 

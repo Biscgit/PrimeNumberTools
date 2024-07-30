@@ -48,10 +48,10 @@ def eratosthenes(number, verbose):
 def atkin(number, verbose):
     if verbose is True:
         st.write(
-            f"Die Modulo-Bedingungen sehen wie folgt aus: \n"
-            f"1. x^2 + y^2 = n    (mod 60) wobei n % 60 in (1, 13, 17, 29, 37, 41, 49, 53) enthalten sein muss. \n"
-            f"2. x^2 + 3y^2 = n   (mod 60) wobei n % 60 is in (7, 19, 31, 43) enthalten sein muss. \n"
-            f"3. 3x^2 - y^2 = n   (mod 60) wobei n % 60 is in (11, 23, 47, 59) enthalten sein muss. \n"
+            "Die Modulo-Bedingungen sehen wie folgt aus: \n"
+            "1. x^2 + y^2 = n    (mod 60) wobei n % 60 in (1, 13, 17, 29, 37, 41, 49, 53) enthalten sein muss. \n"
+            "2. x^2 + 3y^2 = n   (mod 60) wobei n % 60 is in (7, 19, 31, 43) enthalten sein muss. \n"
+            "3. 3x^2 - y^2 = n   (mod 60) wobei n % 60 is in (11, 23, 47, 59) enthalten sein muss. \n"
         )
     sieve = [False] * (number + 1)
     sqrt_limit = int(math.sqrt(number)) + 1
@@ -168,7 +168,7 @@ def solovaystrassen(number, k, verbose):
         else:
             if verbose is True:
                 st.write(
-                    f"Keine Aussage ist möglich und daher wählen einer neuen Zufallszahl a."
+                    "Keine Aussage ist möglich und daher wählen einer neuen Zufallszahl a."
                 )
     if verbose is True:
         st.write(
@@ -313,9 +313,9 @@ if option == "Sieb des Eratosthenes":
 
 if option == "Sieb von Atkin":
     st.write(
-        f"Der Sieb von Atkin ist ein Algorithmus zur Bestimmung von Primzahlen, der eine mathematische Transformation der Quadrate und Reste verwendet, um Kandidaten für Primzahlen zu identifizieren. "
-        f"Er durchläuft ein Gitter von Zahlen und wendet bestimmte Modulo-Bedingungen an, um Zahlen zu markieren, die Primzahlen sein könnten. "
-        f"Schließlich entfernt er Vielfache von gefundenen Primzahlen, um die endgültige Liste der Primzahlen zu erstellen."
+        "Der Sieb von Atkin ist ein Algorithmus zur Bestimmung von Primzahlen, der eine mathematische Transformation der Quadrate und Reste verwendet, um Kandidaten für Primzahlen zu identifizieren. "
+        "Er durchläuft ein Gitter von Zahlen und wendet bestimmte Modulo-Bedingungen an, um Zahlen zu markieren, die Primzahlen sein könnten. "
+        "Schließlich entfernt er Vielfache von gefundenen Primzahlen, um die endgültige Liste der Primzahlen zu erstellen."
     )
     if atkin(number, verbose):
         st.write("Die Zahl " + str(number) + " ist eine Primzahl.")
