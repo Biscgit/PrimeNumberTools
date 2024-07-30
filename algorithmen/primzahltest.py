@@ -1,20 +1,26 @@
 import math
 import random
-
 import streamlit as st
 
+st.write(""" Test """)
+
+st.header('Primzahltest')
+
+option = st.selectbox("Welche Primzahltest-Methode soll gemacht werden?", ["Bruteforce-Methode", "Sieb des Eratosthenes", "Sieb von Atkin", "Fermatscher Primzahltest", "Solovay-Strassen-Test", "Miller-Rabin-Test", "Agrawal-Kayal-Saxena-Primzahltest"], index=1)
+
+st.header("Der ausgwewählte Primzahltest lautet: ", option)
 
 def bruteforce(number, verbose):
     for i in range(2, number):
         if number % i == 0:
             if verbose is True:
-                print(f"{i} ist ein echter Teiler von {number}")
-                print(f"Die Zahl {number} ist zusammengesetzt")
-                print(f"{number} = {i} * {number // i}")
+                st.text(f"{i} ist ein echter Teiler von {number}")
+                st.text(f"Die Zahl {number} ist zusammengesetzt")
+                st.text(f"{number} = {i} * {number // i}")
             return False
         else:
             if verbose is True:
-                print(f"{i} ist kein Teiler von {number}")
+                st.text(f"{i} ist kein Teiler von {number}")
     return True
 
 
@@ -200,14 +206,12 @@ def aks(number, verbose):
     # hier findet AKS stat
     return 0
 
-
-if __name__ == "__main__":
-    number = 37
-    runden = 100
+number = 37
+runden = 100
     # True  --> vermutlich prim
     # False --> zusammengesetzt
     # Primzahltest
-    # bruteforce(number, True)
+#bruteforce(number, True)
     # eratosthenes(number, True)
     # atkin(number, True)
     # fermat(number, True)
