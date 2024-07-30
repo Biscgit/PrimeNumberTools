@@ -66,7 +66,8 @@ def set_random_point() -> bool:
 
 
 # main site - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-st.sidebar.success("Lenstra's Faktorisierung ausgewählt!")
+sidebar_content()
+
 
 st.title("Lenstra elliptic-curve factorization")
 
