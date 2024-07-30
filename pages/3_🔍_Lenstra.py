@@ -4,8 +4,8 @@ import typing
 
 import streamlit as st
 
-from lenstra_lib import *
 from algorithmen.primzahltest import millerrabin
+from lenstra_lib import *
 
 # set state
 state = st.session_state
@@ -83,10 +83,10 @@ with cols[0]:
 with cols[1]:
     st.container(height=12, border=False)
     if st.button(
-            "🔀",
-            key="full_random_select",
-            use_container_width=True,
-            disabled=not check_num(factorize)
+        "🔀",
+        key="full_random_select",
+        use_container_width=True,
+        disabled=not check_num(factorize),
     ):
         fact = int(factorize)
         limit = min([fact, int(1e9)])
@@ -108,9 +108,8 @@ if factorize:
     def is_prime(product: int) -> bool:
         return millerrabin(product, 20, verbose=False)
 
-
     if not check_num(factorize):
-        st.error(r'$n\:$ is not a number!', icon="⚠️")
+        st.error(r"$n\:$ is not a number!", icon="⚠️")
 
     elif is_prime(int(factorize)):
         st.warning(r"$n\:$ is probably prime!", icon="⚠️")
@@ -134,25 +133,21 @@ cols = st.columns([8, 8, 2, 4, 1])
 with cols[2]:
     st.container(height=12, border=False)
     if st.button(
-            "🔀",
-            key="button_curve",
-            disabled=not check_num(factorize),
-            use_container_width=True,
+        "🔀",
+        key="button_curve",
+        disabled=not check_num(factorize),
+        use_container_width=True,
     ):
         set_random_curve()
 
 with cols[0]:
     state.input_curve_a = st.text_input(
-        r"Parameter $\:A$",
-        value=state.input_curve_a,
-        placeholder="Curve parameter A"
+        r"Parameter $\:A$", value=state.input_curve_a, placeholder="Curve parameter A"
     )
 
 with cols[1]:
     state.input_curve_b = st.text_input(
-        r"Parameter $\:B$",
-        value=state.input_curve_b,
-        placeholder="Curve parameter B"
+        r"Parameter $\:B$", value=state.input_curve_b, placeholder="Curve parameter B"
     )
 
 
@@ -171,10 +166,10 @@ with cols[3]:
 
     else:
         if st.button(
-                "Plot curve",
-                key="button_plot_curve",
-                use_container_width=True,
-                disabled=not can_plot(),
+            "Plot curve",
+            key="button_plot_curve",
+            use_container_width=True,
+            disabled=not can_plot(),
         ):
             state.plot_curve = not state.plot_curve
 
@@ -187,7 +182,9 @@ with cols[4]:
 
 if state.input_curve_a is not None and state.input_curve_b is not None:
     if not can_plot() and factorize not in [None, ""]:
-        st.error('Your chosen parameters result in an invalid elliptic curve!', icon="❌")
+        st.error(
+            "Your chosen parameters result in an invalid elliptic curve!", icon="❌"
+        )
 
 else:
     st.info("Enter elliptic curve parameters or select random ones", icon="ℹ️")
@@ -200,10 +197,10 @@ place_holder = st.container()
 with cols[2]:
     st.container(height=12, border=False)
     if st.button(
-            "🔀",
-            key="button_point",
-            disabled=check_num(factorize) and int(factorize) > MAX_PLOT_P or not can_plot(),
-            use_container_width=True,
+        "🔀",
+        key="button_point",
+        disabled=check_num(factorize) and int(factorize) > MAX_PLOT_P or not can_plot(),
+        use_container_width=True,
     ):
         if not set_random_point():
             with place_holder:
@@ -211,16 +208,12 @@ with cols[2]:
 
 with cols[0]:
     state.input_point_x = st.text_input(
-        r"Point $\:X$",
-        value=state.input_point_x,
-        placeholder="Coordinate X"
+        r"Point $\:X$", value=state.input_point_x, placeholder="Coordinate X"
     )
 
 with cols[1]:
     state.input_point_y = st.text_input(
-        r"Point $\:Y$",
-        value=state.input_point_y,
-        placeholder="Coordinate Y"
+        r"Point $\:Y$", value=state.input_point_y, placeholder="Coordinate Y"
     )
 
 on_curve = True
@@ -230,22 +223,27 @@ if not all([state.input_point_x, state.input_point_y]):
 elif not check_num(state.input_point_x) or not check_num(state.input_point_y):
     st.error("One of the coordinates is not a number!", icon="❌")
 
-elif check_num(factorize) and not (on_curve := is_on_curve(
+elif check_num(factorize) and not (
+    on_curve := is_on_curve(
         int(state.input_curve_a),
         int(state.input_curve_b),
         int(factorize),
         int(state.input_point_x),
         int(state.input_point_y),
-)):
+    )
+):
     st.error("Your point is not on the curve!", icon="❌")
 
 with cols[3]:
     st.container(height=12, border=False)
     if st.button(
-            "Highlight",
-            use_container_width=True,
-            disabled=not can_plot() or not check_num(state.input_point_x) or not check_num(
-                state.input_point_y) or check_num(factorize) and int(factorize) > MAX_PLOT_P,
+        "Highlight",
+        use_container_width=True,
+        disabled=not can_plot()
+        or not check_num(state.input_point_x)
+        or not check_num(state.input_point_y)
+        or check_num(factorize)
+        and int(factorize) > MAX_PLOT_P,
     ):
         toggle_highlight(state.input_point_x, state.input_point_y)
 
@@ -260,13 +258,21 @@ with cols[4]:
 st.header("Factorization")
 # call_try_factorize = st.button("Try until found", type="secondary", use_container_width=True)
 
-if not all([check_num(x) for x in [
-    factorize,
-    state.input_curve_a,
-    state.input_curve_b,
-    state.input_point_x,
-    state.input_point_y
-]]) or not on_curve:
+if (
+    not all(
+        [
+            check_num(x)
+            for x in [
+                factorize,
+                state.input_curve_a,
+                state.input_curve_b,
+                state.input_point_x,
+                state.input_point_y,
+            ]
+        ]
+    )
+    or not on_curve
+):
     st.info("Enter missing or change incorrect values to start algorithm", icon="ℹ️")
 
 else:
@@ -285,14 +291,14 @@ else:
             mode_options = ["Prime factors", "Factorial n!"]
             mode_index = mode_options.index(
                 st.selectbox(
-                    "Calculation Mode",
-                    mode_options,
-                    key="select_factorization_mode"
+                    "Calculation Mode", mode_options, key="select_factorization_mode"
                 )
             )
 
             items = []
-            iterator = streamlit_lenstra((a, b, n), (x, y), mode_index, max_factor=10_000)
+            iterator = streamlit_lenstra(
+                (a, b, n), (x, y), mode_index, max_factor=10_000
+            )
 
             while True:
                 try:
@@ -310,8 +316,8 @@ else:
                         with cols[0]:
                             st.container(height=1, border=False)
                             st.success(
-                                fr"Found factor $\, {result} \,$ with $\, {n} = {result} \cdot {divider}$",
-                                icon="✅"
+                                rf"Found factor $\, {result} \,$ with $\, {n} = {result} \cdot {divider}$",
+                                icon="✅",
                             )
 
                         with cols[1]:
@@ -328,12 +334,14 @@ else:
 
                             else:
                                 if st.button(
-                                        "Plot curves",
-                                        key="button_plot_factor_curves",
-                                        use_container_width=True,
-                                        disabled=not can_plot(),
+                                    "Plot curves",
+                                    key="button_plot_factor_curves",
+                                    use_container_width=True,
+                                    disabled=not can_plot(),
                                 ):
-                                    state.plot_factor_curves = not state.plot_factor_curves
+                                    state.plot_factor_curves = (
+                                        not state.plot_factor_curves
+                                    )
 
                         with cols[2]:
                             st.container(height=15, border=False)
@@ -342,7 +350,11 @@ else:
                             else:
                                 st.write("⬛️")
 
-                        if state.plot_factor_curves and check_num(factorize) and not limit_size:
+                        if (
+                            state.plot_factor_curves
+                            and check_num(factorize)
+                            and not limit_size
+                        ):
                             container = st.container()
 
                             a = int(state.input_curve_a)
@@ -354,15 +366,21 @@ else:
 
                             for i, num in enumerate([result, divider], 1):
                                 st.markdown(
-                                    fr"**Curve {i}:** $\; y^2 \equiv x^3 + {a % num}x + {b % num} \; mod \; {num}\,$"
+                                    rf"**Curve {i}:** $\; y^2 \equiv x^3 + {a % num}x + {b % num} \; mod \; {num}\,$"
                                 )
 
                     else:
                         # with result_widget:
                         if items[0].current_point.y < math.inf:
-                            st.error(fr"Found no valid factor: Exceeded operations limit", icon="❌")
+                            st.error(
+                                rf"Found no valid factor: Exceeded operations limit",
+                                icon="❌",
+                            )
                         else:
-                            st.error(fr"Found no valid factor: $\, gcd \,$ resulted in $1$ or $n$", icon="❌")
+                            st.error(
+                                rf"Found no valid factor: $\, gcd \,$ resulted in $1$ or $n$",
+                                icon="❌",
+                            )
 
                     break
 
@@ -395,27 +413,42 @@ else:
                         containers[last_operation] = st.container(border=True)
                         containers[last_operation].__enter__()
 
-                        calc_index = size - i - last_operation.bit_length() - last_operation.bit_count() + 1
+                        calc_index = (
+                            size
+                            - i
+                            - last_operation.bit_length()
+                            - last_operation.bit_count()
+                            + 1
+                        )
 
                         # special case with breaking while calculating a scalar
                         modifier = 0
                         if i == 0 and last_operation > 2:
-                            operations = last_operation.bit_length() + last_operation.bit_count() - 2
-                            actual = len([x for x in items if x.scalar == last_operation])
+                            operations = (
+                                last_operation.bit_length()
+                                + last_operation.bit_count()
+                                - 2
+                            )
+                            actual = len(
+                                [x for x in items if x.scalar == last_operation]
+                            )
                             modifier = max(operations - actual, 0)
 
                         base_index = calc_index + modifier
-                        st.markdown(fr"Calculating $\,{last_operation} \cdot P_{{{base_index}}} = "
-                                    fr"P_{{{size - i - 1 + modifier}}}$")
+                        st.markdown(
+                            rf"Calculating $\,{last_operation} \cdot P_{{{base_index}}} = "
+                            rf"P_{{{size - i - 1 + modifier}}}$"
+                        )
 
                     col_outer = st.columns([1, 15])
                     with col_outer[0]:
-                        s = {
-                            True: "➕",
-                            False: "✖️",
-                            None: "◾️"
-                        }.get(item.is_operation_add)
-                        st.markdown(f"""<div style="font-size: 40px;">{s}</div>""", unsafe_allow_html=True)
+                        s = {True: "➕", False: "✖️", None: "◾️"}.get(
+                            item.is_operation_add
+                        )
+                        st.markdown(
+                            f"""<div style="font-size: 40px;">{s}</div>""",
+                            unsafe_allow_html=True,
+                        )
 
                     with col_outer[1]:
                         with st.container(border=True):
@@ -425,59 +458,70 @@ else:
                                 if i < size - 1:
                                     if item.is_operation_add:
                                         st.markdown(
-                                            fr"$P_{{{size - i - 1}}}({item.current_point.x}|{item.current_point.y})\\"
-                                            fr"= P_{{{base_index}}} + P_{{{size - i - 2}}}$")
+                                            rf"$P_{{{size - i - 1}}}({item.current_point.x}|{item.current_point.y})\\"
+                                            rf"= P_{{{base_index}}} + P_{{{size - i - 2}}}$"
+                                        )
 
                                     else:
                                         st.markdown(
-                                            fr"$P_{{{size - i - 1}}}({item.current_point.x}|{item.current_point.y})\\"
-                                            fr"= 2 \cdot P_{{{size - i - 2}}}$")
+                                            rf"$P_{{{size - i - 1}}}({item.current_point.x}|{item.current_point.y})\\"
+                                            rf"= 2 \cdot P_{{{size - i - 2}}}$"
+                                        )
 
                             with cols[1]:
                                 calculation = ""
 
                                 if item.is_operation_add:
                                     calculation += (
-                                        fr"s \equiv {item.slope} \equiv \frac{{{item.base_point.y} - "
-                                        fr"{item.last_point.y}}}{{{item.base_point.x} - {item.last_point.x}}} "
-                                        fr"\; mod \; {item.current_point.curve.p}"
+                                        rf"s \equiv {item.slope} \equiv \frac{{{item.base_point.y} - "
+                                        rf"{item.last_point.y}}}{{{item.base_point.x} - {item.last_point.x}}} "
+                                        rf"\; mod \; {item.current_point.curve.p}"
                                     )
 
                                 else:
                                     calculation += (
-                                        fr"s \equiv {item.slope} \equiv \frac{{3 \cdot {item.last_point.x}^2 + "
-                                        fr"{item.current_point.curve.a}}}{{2 \cdot {item.last_point.y}}} "
-                                        fr"\; mod \; {item.current_point.curve.p}"
+                                        rf"s \equiv {item.slope} \equiv \frac{{3 \cdot {item.last_point.x}^2 + "
+                                        rf"{item.current_point.curve.a}}}{{2 \cdot {item.last_point.y}}} "
+                                        rf"\; mod \; {item.current_point.curve.p}"
                                     )
 
                                 if math.inf > item.slope > 0:
                                     calculation += (
-                                        fr"\\ x \equiv {item.slope}^2 - {item.last_point.x} - {item.base_point.x} "
-                                        fr"\; mod \; {item.current_point.curve.p}"
-                                        fr"\\ y \equiv {item.slope} \cdot ({item.last_point.x} - "
-                                        fr"{item.current_point.x}) - {item.last_point.y} "
-                                        fr"\; mod \; {item.current_point.curve.p}"
+                                        rf"\\ x \equiv {item.slope}^2 - {item.last_point.x} - {item.base_point.x} "
+                                        rf"\; mod \; {item.current_point.curve.p}"
+                                        rf"\\ y \equiv {item.slope} \cdot ({item.last_point.x} - "
+                                        rf"{item.current_point.x}) - {item.last_point.y} "
+                                        rf"\; mod \; {item.current_point.curve.p}"
                                     )
 
                                 else:
-                                    calculation += (
-                                        fr"\\ q = gcd({item.last_point.x} - {item.current_point.x}, {n})"
-                                    )
+                                    calculation += rf"\\ q = gcd({item.last_point.x} - {item.current_point.x}, {n})"
 
                                 st.markdown(f"${calculation}$")
 
                         with cols[2]:
                             if st.button(
-                                    "💡",
-                                    key=f"res_select_{i}",
-                                    disabled=i == 0 or not can_plot(),
+                                "💡",
+                                key=f"res_select_{i}",
+                                disabled=i == 0 or not can_plot(),
                             ):
-                                toggle_highlight(item.current_point.x, item.current_point.y)
+                                toggle_highlight(
+                                    item.current_point.x, item.current_point.y
+                                )
 
-                            if (item.current_point.x, item.current_point.y) in state.highlighted_points:
-                                st.markdown('<p style="text-align: center;">🔴</p>', unsafe_allow_html=True)
+                            if (
+                                item.current_point.x,
+                                item.current_point.y,
+                            ) in state.highlighted_points:
+                                st.markdown(
+                                    '<p style="text-align: center;">🔴</p>',
+                                    unsafe_allow_html=True,
+                                )
                             else:
-                                st.markdown('<p style="text-align: center;">⚫</p>', unsafe_allow_html=True)
+                                st.markdown(
+                                    '<p style="text-align: center;">⚫</p>',
+                                    unsafe_allow_html=True,
+                                )
 
 # plot curve: here because of updates
 if state.plot_curve and check_num(factorize) and int(factorize) < MAX_PLOT_P:

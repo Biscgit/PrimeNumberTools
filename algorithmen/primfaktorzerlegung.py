@@ -1,13 +1,16 @@
 import math
 import random
+
 import streamlit as st
 
-#----------------------------------------PRIMFAKTORZERLEGUNG----------------------------------------
+# ----------------------------------------PRIMFAKTORZERLEGUNG----------------------------------------
+
 
 def ggt(a, b):
     while b:
         a, b = b, a % b
     return a
+
 
 def pollard_rho(n, verbose):
     if n % 2 == 0:
@@ -15,24 +18,29 @@ def pollard_rho(n, verbose):
             st.write(f"Da {n} eine gerade Zahl ist ist 2 ein Primfaktor")
         return 2
 
-    x = random.randint(1, n-1)
+    x = random.randint(1, n - 1)
     y = x
-    c = random.randint(1, n-1)
+    c = random.randint(1, n - 1)
     d = 1
     if verbose is True:
-        st.write(f"Es werden für x, y, c zufällige Werte zwischen definiert: x = {x}, y = {y} und c = {c} ")
+        st.write(
+            f"Es werden für x, y, c zufällige Werte zwischen definiert: x = {x}, y = {y} und c = {c} "
+        )
     while d == 1:
-        x = (x*x + c) % n
-        y = (y*y + c) % n
-        y = (y*y + c) % n
+        x = (x * x + c) % n
+        y = (y * y + c) % n
+        y = (y * y + c) % n
         d = ggt(abs(x - y), n)
         if verbose is True:
-            st.write(f" die Wert x und y  werden quadriert und c addiert. Für y ein weiteres Mal. d wird der ggT von (|(x - y)|, n).  x = {x}, y = {y} und d = {d}")
+            st.write(
+                f" die Wert x und y  werden quadriert und c addiert. Für y ein weiteres Mal. d wird der ggT von (|(x - y)|, n).  x = {x}, y = {y} und d = {d}"
+            )
         if d == n:
             return pollard_rho(n, verbose)
     if verbose is True:
         st.write(f"Da der ggT {d} ungleich 1 ist muss {d} ein Primfaktor sein")
     return d
+
 
 def is_prime(n):
     if n <= 1:
@@ -47,6 +55,7 @@ def is_prime(n):
             return False
         i += 6
     return True
+
 
 def factors_pollard(n, verbose):
     if n <= 1:
@@ -70,13 +79,17 @@ def williams_p_plus_1(n, verbose):
 
     for j in range(2, b + 1):
         if verbose is True:
-            st.write(f"Es wird der Rest der Potent von {a} hoch {j} modulo {n} brechnet")
+            st.write(
+                f"Es wird der Rest der Potent von {a} hoch {j} modulo {n} brechnet"
+            )
             st.write(f"Zudem wird der ggT von {a - 1} und {n} bestimmt. ")
         a = pow(a, j, n)
         d = ggt(a - 1, n)
         if 1 < d < n:
             if verbose is True:
-                st.write(f"Da der ggT ({d}) größer 1, aber kleiner {n} ist es ein Teiler.")
+                st.write(
+                    f"Da der ggT ({d}) größer 1, aber kleiner {n} ist es ein Teiler."
+                )
             return d
 
     return None
@@ -105,7 +118,8 @@ def factors_williams(n, verbose):
 
     return factors
 
-#----------------------------------------STREAMLIT----------------------------------------
+
+# ----------------------------------------STREAMLIT----------------------------------------
 
 """st.header('Primzahlzerlegung')
 
