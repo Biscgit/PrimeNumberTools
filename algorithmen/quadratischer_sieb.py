@@ -2,7 +2,8 @@ import random
 import typing
 
 import numpy as np
-from primzahltest import ggt
+
+from algorithmen.primzahltest import ggt
 
 
 def quad_residue(a, n):
