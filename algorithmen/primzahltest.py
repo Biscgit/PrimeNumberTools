@@ -227,11 +227,9 @@ def aks(number):
             return False
     return True
 
-#----------------------------------------PRIMZAHLZERLEGUNG----------------------------------------
-
 #----------------------------------------STREAMLIT----------------------------------------
 
-st.header('Primzahltests')
+st.header('Primzahltest')
 
 option = st.selectbox("Welche Primzahltest-Methode soll gemacht werden?", ["Bruteforce-Methode", "Sieb des Eratosthenes", "Sieb von Atkin", "Fermatscher Primzahltest", "Solovay-Strassen-Test", "Miller-Rabin-Test", "Agrawal-Kayal-Saxena-Primzahltest"], index=0)
 
