@@ -107,7 +107,7 @@ def factors_williams(n, verbose):
 
 #----------------------------------------STREAMLIT----------------------------------------
 
-"""st.header('Primzahlzerlegung')
+st.header('Primzahlzerlegung')
 
 option = st.selectbox("Welche Primzahlzerlegungs-Methode soll gemacht werden?", ["Pollard-Rho", "Williams", "Lenstra", "Quadratischer Sieb"], index=0)
 
@@ -123,4 +123,4 @@ if option == "Pollard-Rho":
 if option == "Williams":
     factors = factors_williams(number, verbose)
     st.write(f"Die Primfaktoren von {number} sind: ")
-    st.write(factors)"""
+    st.write(factors)

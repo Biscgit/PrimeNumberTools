@@ -1,11 +1,11 @@
 import math
 import random
-import sympy
 import typing
 
 import streamlit as st
 
 from lenstra_lib import *
+from algorithmen.primzahltest import millerrabin
 
 # set state
 state = st.session_state
@@ -66,6 +66,9 @@ def set_random_point() -> bool:
 
 
 # main site - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+sidebar_content()
+
+
 st.title("Lenstra elliptic-curve factorization")
 
 cols = st.columns([23, 2])
@@ -103,14 +106,14 @@ call_factorize = False
 if factorize:
 
     def is_prime(product: int) -> bool:
-        return sympy.isprime(product)
+        return millerrabin(product, 20, verbose=False)
 
 
     if not check_num(factorize):
         st.error(r'$n\:$ is not a number!', icon="⚠️")
 
     elif is_prime(int(factorize)):
-        st.warning(r"$n\:$ is a prime number!", icon="⚠️")
+        st.warning(r"$n\:$ is probably prime!", icon="⚠️")
 
 
 else:
@@ -489,3 +492,6 @@ if state.plot_curve and check_num(factorize) and int(factorize) < MAX_PLOT_P:
 
 # ToDo: performance: getting all points on large ints for some reason?
 # ToDo: large integer design -> 999999000001
+
+st.container(height=30, border=False)
+st.html('<p style="color: #ffffff20;">David Horvát, 2024 ❤️</p>')
