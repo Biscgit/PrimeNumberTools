@@ -66,6 +66,8 @@ def set_random_point() -> bool:
 
 
 # main site - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+st.sidebar.success("Lenstra's Faktorisierung ausgewählt!")
+
 st.title("Lenstra elliptic-curve factorization")
 
 cols = st.columns([23, 2])
@@ -489,3 +491,6 @@ if state.plot_curve and check_num(factorize) and int(factorize) < MAX_PLOT_P:
 
 # ToDo: performance: getting all points on large ints for some reason?
 # ToDo: large integer design -> 999999000001
+
+st.container(height=30, border=False)
+st.html('<p style="color: #ffffff20;">David Horvát, 2024 ❤️</p>')
