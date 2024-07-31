@@ -50,8 +50,8 @@ def atkin(number, verbose):
         st.write(
             "Die Modulo-Bedingungen sehen wie folgt aus: \n"
             "1. x^2 + y^2 = n    (mod 60) wobei n % 60 in (1, 13, 17, 29, 37, 41, 49, 53) enthalten sein muss. \n"
-            "2. x^2 + 3y^2 = n   (mod 60) wobei n % 60 is in (7, 19, 31, 43) enthalten sein muss. \n"
-            "3. 3x^2 - y^2 = n   (mod 60) wobei n % 60 is in (11, 23, 47, 59) enthalten sein muss. \n"
+            "2. x^2 + 3y^2 = n   (mod 60) wobei n % 60 in (7, 19, 31, 43) enthalten sein muss. \n"
+            "3. 3x^2 - y^2 = n   (mod 60) wobei n % 60 in (11, 23, 47, 59) enthalten sein muss. \n"
         )
     sieve = [False] * (number + 1)
     sqrt_limit = int(math.sqrt(number)) + 1
@@ -389,7 +389,7 @@ if option == "Agrawal-Kayal-Saxena-Primzahltest":
         f"Der AKS-Test überprüft diese Eigenschaft unter eingeschränkten Bedingungen, um die Komplexität zu reduzieren. Zuerst wird festgestellt, ob n eine perfekte Potenz ist. "
         f"Wenn ja, ist n keine Primzahl. Andernfalls wird eine geeignete Grenze r bestimmt, sodass n für die Mehrheit der Basen a keine nichttrivialen r-Wurzeln besitzt. "
         f"Dies wird durch iteratives Finden des kleinsten r erreicht, für das die Ordnung von n modulo r groß genug ist. "
-        f"Der Algorithmus überprüft dann für jedes a von 1 bis ${latex3}$, ob ${latex4}$. Falls ein solches 𝑎 a gefunden wird, ist n keine Primzahl. "
+        f"Der Algorithmus überprüft dann für jedes a von 1 bis ${latex3}$, ob ${latex4}$. Falls ein solches a gefunden wird, ist n keine Primzahl. "
         f"Schließlich wird getestet, ob ${latex5}$ für jedes a in diesem Bereich gilt. Wenn alle diese Tests bestanden werden, ist n prim, andernfalls nicht. "
         f"Der AKS-Primzahltest ist der erste bekannte deterministische Algorithmus mit polynomieller Laufzeit, der die Primalität jeder beliebigen Zahl ohne Annahmen über unbewiesene Hypothesen überprüft."
     )

@@ -224,4 +224,4 @@ def draw_curve(
                 st.rerun()
 
         st.markdown(fr"Plotted Weiterstrass Curve $\; y^2 \equiv x^3 + {a}x + {b} \; mod \; {p}\,$ "
-                    fr"with $\,{len(points)}\,$ points$\,$ + 𝓞")
+                    fr"with $\,{len(points) + 1}\,$ points$\,$ (inklusive 𝓞)")
