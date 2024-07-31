@@ -538,4 +538,4 @@ if state.plot_curve and check_num(factorize) and int(factorize) < MAX_PLOT_P:
 # ToDo: large integer design -> 999999000001
 
 st.container(height=30, border=False)
-st.html('<p style="color: #ffffff20;">David Horvát, 2024 ❤️</p>')
+st.html('<p style="color: #ffffff40;">David Horvát, 2024 ❤️</p>')

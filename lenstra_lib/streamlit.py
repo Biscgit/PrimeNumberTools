@@ -22,7 +22,7 @@ def set_default_session(state: dict):
 def sidebar_content():
     st.sidebar.success("Lenstra's Faktorisierung ausgewählt!")
     st.sidebar.container(height=25, border=False)
-    st.sidebar.markdown("Klicke den Button um mehr über Lenstra zu erfahren!")
+    st.sidebar.markdown("Klicke einen der Buttons um mehr über Lenstra zu erfahren!")
 
     sb_cols = st.sidebar.columns(3)
 
