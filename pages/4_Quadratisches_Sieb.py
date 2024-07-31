@@ -12,7 +12,7 @@ def nice_primes(primes, row):
         if column == 0:
             continue
         factors += [rf"{primes[j]}^{{{column}}}"]
-    return "*".join(factors)
+    return "\cdot".join(factors)
 
 
 def sieving(primes, mat, x, number):
@@ -96,16 +96,16 @@ else:
                 numbers = np.nonzero(f.indexes)[0] + f.x
                 st.write("So to apply the Formel that is showen before, we do this:")
                 st.write(
-                    rf"$ {"*".join(numbers.astype(str) + "^2")} \equiv {"*".join(exponents)} \% {f.number}$"
+                    rf"$ {"\cdot".join(numbers.astype(str) + "^2")} \equiv {"\cdot".join(exponents)} mod {f.number}$"
                 )
                 st.write(
-                    rf"$ ({"*".join(numbers.astype(str))})^2 \equiv {nice_primes(f.primes, f.exponents)} \% {f.number}$"
+                    rf"$ ({"\cdot".join(numbers.astype(str))})^2 \equiv {nice_primes(f.primes, f.exponents)} mod {f.number}$"
                 )
                 st.write(
-                    rf"$ {np.prod(numbers)}^2 \equiv {nice_primes(f.primes, f.exponents//2)} \% {f.number}$"
+                    rf"$ {np.prod(numbers)}^2 \equiv {nice_primes(f.primes, f.exponents//2)} mod {f.number}$"
                 )
                 st.write(
-                    rf"$ {np.prod(numbers) % f.number}^2 \equiv {np.prod(f.primes**(f.exponents//2))}^2 \% {f.number}$"
+                    rf"$ {np.prod(numbers) % f.number}^2 \equiv {np.prod(f.primes**(f.exponents//2))}^2 mod {f.number}$"
                 )
                 st.write(
                     rf"Faktor 1: $gcd({f.base} - {f.exp}, {f.number}) = {f.factor1}$"
