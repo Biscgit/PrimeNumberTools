@@ -534,8 +534,5 @@ if state.plot_curve and check_num(factorize) and int(factorize) < MAX_PLOT_P:
 # long calc: 4567, 884, 1479, 423, 3129
 # long calc: 5767, 3494, 4821, 1623, 1169
 
-# ToDo: performance: getting all points on large ints for some reason?
-# ToDo: large integer design -> 999999000001
-
 st.container(height=30, border=False)
 st.html('<p style="color: #ffffff40;">David Horvát, 2024 ❤️</p>')
