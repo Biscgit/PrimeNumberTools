@@ -262,7 +262,7 @@ def aks(number):
 
 
 # ----------------------------------------STREAMLIT----------------------------------------
-
+"""
 st.header("Primzahltest")
 
 option = st.selectbox(
@@ -326,7 +326,7 @@ if option == "Fermatscher Primzahltest":
     latex1 = r"a^{p-1} \equiv 1 (mod p)"
     latex2 = r"a^{n-1} \equiv 1 (mod n)"
     st.write(
-        rf"""Der Fermat-Primzahltest basiert auf dem kleinen Fermatschen Satz, der besagt, dass für eine Primzahl p und eine Basis a gilt: ${latex1}$. Um zu prüfen, ob eine Zahl n prim ist, wählt man eine Basis a  und überprüft, ob ${latex2}$. Wenn diese Bedingung nicht erfüllt ist, ist n definitiv keine Primzahl, aber wenn sie erfüllt ist, ist n wahrscheinlich prim, aber nicht garantiert."""
+        rf"Der Fermat-Primzahltest basiert auf dem kleinen Fermatschen Satz, der besagt, dass für eine Primzahl p und eine Basis a gilt: ${latex1}$. Um zu prüfen, ob eine Zahl n prim ist, wählt man eine Basis a  und überprüft, ob ${latex2}$. Wenn diese Bedingung nicht erfüllt ist, ist n definitiv keine Primzahl, aber wenn sie erfüllt ist, ist n wahrscheinlich prim, aber nicht garantiert."
     )
     if fermat(number, verbose):
         st.write(
@@ -341,7 +341,7 @@ if option == "Solovay-Strassen-Test":
     latex1 = r"\left(\frac{a}{n} \right)"
     latex2 = r"a^{(n-1)/2} \equiv \left(\frac{a}{n}\right) \ (\text{mod} \ n)"
     st.write(
-        rf"""Der Solovay-Strassen-Primzahltest basiert auf dem Euler-Kriterium und verwendet die Jacobi-Symbole zur Bestimmung der Primalität. Für eine gegebene Zahl n und eine zufällige Basis a, berechnet der Test das Jacobi-Symbol ${latex1}$ und überprüft, ob ${latex2}$. Wenn diese Bedingung nicht erfüllt ist, ist n keine Primzahl; wenn sie erfüllt ist, ist n wahrscheinlich prim, jedoch besteht immer ein kleines Risiko, dass n eine Pseudoprimzahl ist."""
+        rf"Der Solovay-Strassen-Primzahltest basiert auf dem Euler-Kriterium und verwendet die Jacobi-Symbole zur Bestimmung der Primalität. Für eine gegebene Zahl n und eine zufällige Basis a, berechnet der Test das Jacobi-Symbol ${latex1}$ und überprüft, ob ${latex2}$. Wenn diese Bedingung nicht erfüllt ist, ist n keine Primzahl; wenn sie erfüllt ist, ist n wahrscheinlich prim, jedoch besteht immer ein kleines Risiko, dass n eine Pseudoprimzahl ist."
     )
     runden = st.number_input(
         "Wieviele Runden sollen durchlaufen bzw. getestet werden?",
@@ -396,4 +396,4 @@ if option == "Agrawal-Kayal-Saxena-Primzahltest":
     if aks(number):
         st.write(f"{number} ist eine Primzahl.")
     else:
-        st.write(f"{number} ist keine Primzahl.")
+        st.write(f"{number} ist keine Primzahl.")"""
