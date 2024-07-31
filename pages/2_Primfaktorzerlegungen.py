@@ -2,6 +2,7 @@ import random
 
 import streamlit as st
 
+
 # ----------------------------------------PRIMFAKTORZERLEGUNG----------------------------------------
 
 
@@ -124,7 +125,7 @@ st.header("Primzahlzerlegung")
 
 option = st.selectbox(
     "Welche Primzahlzerlegungs-Methode soll gemacht werden?",
-    ["Pollard-Rho", "Williams", "Lenstra", "Quadratischer Sieb"],
+    ["Pollard-Rho", "Williams"],  # , "Lenstra", "Quadratischer Sieb"],
     index=0,
 )
 
