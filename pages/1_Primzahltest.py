@@ -201,7 +201,7 @@ def millerrabin(number, runden, verbose):
     def millerrabinloop(a, verbose):
         x = pow(a, d, number)
         if verbose is True:
-            latex = r"{a}^{d} mod {number}"
+            latex = rf"{a}^{{{d}}} mod {number}"
             st.write(f"Die Zahl {x} wird durch ${latex}$ berechnet.")
         if x == 1 or x == number - 1:
             if verbose is True:

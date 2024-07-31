@@ -85,14 +85,16 @@ else:
                 st.write("")
                 for i in f.perfect_square:
                     st.write(f"{i}")
-                st.write("and this adds up to:")
+                st.write("xor every line gets this:")
                 st.write(f"{np.zeros(f.org_mat.shape[1], dtype=int)}")
+                st.write("Which proves that these numbers are a perfect square.")
 
             with st.expander("Calculating factors", expanded=True):
                 exponents = []
                 for row in f.perfect_square:
                     exponents += [f"({nice_primes(f.primes, row)})"]
                 numbers = np.nonzero(f.indexes)[0] + f.x
+                st.write("So to apply the Formel that is showen before, we do this:")
                 st.write(
                     rf"$ {"*".join(numbers.astype(str) + "^2")} \equiv {"*".join(exponents)} \% {f.number}$"
                 )
