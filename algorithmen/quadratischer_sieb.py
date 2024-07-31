@@ -23,11 +23,11 @@ def quad_residue(a, n):
     z = 1
     while x != 0:
         if x % 2 == 0:
-            a = pow(a, 2, int(n))
+            a = pow(int(a), 2, int(n))
             x //= 2
         else:
             x -= 1
-            z = pow((z * a), 1, int(n))
+            z = pow(int(z * a), 1, int(n))
 
     return z
 
@@ -114,7 +114,7 @@ class quadratic_sieve:
         self.exp = int(np.prod(self.primes ** (exponents / 2)) % self.number)
         self.factor1, self.factor2 = (
             math.gcd(int(self.base - self.exp), self.number),
-            math.gcd(int(self.base + self.exp), self.number),
+            math.gcd(pow(int(self.base + self.exp), 1, self.number), self.number),
         )
 
     def fast_gaussian_elimination(self, matrix: np.array) -> np.array:
