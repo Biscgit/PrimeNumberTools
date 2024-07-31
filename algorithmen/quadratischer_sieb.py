@@ -191,8 +191,7 @@ def tonnelli_shanks(rhs: int, p: int) -> typing.Optional[tuple[int, int]]:
             try:
                 d = pow(c, pow(2, m - i - 1), p)
 
-            except TypeError as e:
-                print(e)
+            except TypeError:
                 return None, None
 
             # set common variables

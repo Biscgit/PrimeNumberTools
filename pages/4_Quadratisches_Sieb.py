@@ -51,7 +51,7 @@ else:
         f = factorise(factorize)
         if f is not None:
             sieving_result = sieving(f.primes, f.org_mat, f.x, f.number)
-            with st.expander("Explaination"):
+            with st.expander("Explanation"):
                 st.write(
                     r"Fermat's factorization is very simple its based on the equation of the differnce of two squares ($x^2 - y^2 = (x-y)(x+y)$). Thats also corresponds to this: $x^2 - y^2 = N$, that we are able to rewrite to $x^2 - N = y^2$. For the algo x is predefind ($x = \left \lceil{\sqrt{N}}\right \rceil $), will be increased everytime until a y is found that is a perfect square. As this only works for little numbers, as there a not so much perfect squares, the quadratic sieve was implemented, which is based on the Fermat's factorization, but a lot faster. It has slightly modified the formula: $x^2 - y^2 = kN, k>1$, otherwise it would just be Fermat. So if this applies, the greatest common divisor from $x-y$ and $N$ ($gcd(x-y,N)$ is a factor of N, as $gcd(x+y, n)$ is the other factor."
                 )
@@ -99,10 +99,10 @@ else:
                     rf"$ {"\cdot".join(numbers.astype(str) + "^2")} \equiv {"\cdot".join(exponents)} mod {f.number}$"
                 )
                 st.write(
-                    rf"$ ({"\cdot".join(numbers.astype(str))})^2 \equiv {nice_primes(f.primes, f.exponents)} mod {f.number}$"
+                    rf"$ ({"\\cdot".join(numbers.astype(str))})^2 \equiv {nice_primes(f.primes, f.exponents)} mod {f.number}$"
                 )
                 st.write(
-                    rf"$ {np.prod(numbers)}^2 \equiv {nice_primes(f.primes, f.exponents//2)} mod {f.number}$"
+                    rf"$ {np.prod(numbers)}^2 \equiv ({nice_primes(f.primes, f.exponents//2)})^2 mod {f.number}$"
                 )
                 st.write(
                     rf"$ {np.prod(numbers) % f.number}^2 \equiv {np.prod(f.primes**(f.exponents//2))}^2 mod {f.number}$"
@@ -115,5 +115,5 @@ else:
                 )
                 # st.write(f"Faktor 1 ist: {f.factor1}\nFaktor 2 ist: {f.factor2}")
     except Exception as e:
-        print(e)
+        print(1, e)
         st.warning("Can't use your input!", icon="⚠️")
