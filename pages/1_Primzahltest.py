@@ -389,7 +389,7 @@ if option == "Agrawal-Kayal-Saxena-Primzahltest":
         f"Der AKS-Test überprüft diese Eigenschaft unter eingeschränkten Bedingungen, um die Komplexität zu reduzieren. Zuerst wird festgestellt, ob n eine perfekte Potenz ist. "
         f"Wenn ja, ist n keine Primzahl. Andernfalls wird eine geeignete Grenze r bestimmt, sodass n für die Mehrheit der Basen a keine nichttrivialen r-Wurzeln besitzt. "
         f"Dies wird durch iteratives Finden des kleinsten r erreicht, für das die Ordnung von n modulo r groß genug ist. "
-        f"Der Algorithmus überprüft dann für jedes a von 1 bis ${latex3}$, ob ${latex4}$. Falls ein solches 𝑎 a gefunden wird, ist n keine Primzahl. "
+        f"Der Algorithmus überprüft dann für jedes a von 1 bis ${latex3}$, ob ${latex4}$. Falls ein solches a gefunden wird, ist n keine Primzahl. "
         f"Schließlich wird getestet, ob ${latex5}$ für jedes a in diesem Bereich gilt. Wenn alle diese Tests bestanden werden, ist n prim, andernfalls nicht. "
         f"Der AKS-Primzahltest ist der erste bekannte deterministische Algorithmus mit polynomieller Laufzeit, der die Primalität jeder beliebigen Zahl ohne Annahmen über unbewiesene Hypothesen überprüft."
     )
